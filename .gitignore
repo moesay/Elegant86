@@ -1,0 +1,8 @@
+*.o
+.qmake.stash
+Elegant86
+__Tagbar__.1
+Makefile
+.clangd/
+compile_commands.json
+Elegant86.pro.user

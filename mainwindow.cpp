@@ -7,11 +7,6 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    /*
-     * mov ds, [0xff+bx+si]
-     *  -Exp : 8E 58 FF 00
-     *  -Rel : 8E
-     */
     codeEditor->setFont(QFont("Arial", 20));
     ui->setupUi(this);
     setCentralWidget(codeEditor);

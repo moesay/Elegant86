@@ -79,7 +79,6 @@ QString Mov::process() {
     QString processedLine;
     uchar opcode;
     //split the instruction into
-
     auto [mnemonic, firstOp, secondOp] = threeTokens();
     //get the operand type. is it a reg16, reg8, mem address, segreg or what?
     OperandType firstOpType = getOperandType(firstOp); OperandType secondOpType = getOperandType(secondOp);

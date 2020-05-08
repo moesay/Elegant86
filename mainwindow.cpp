@@ -7,22 +7,21 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    /*
+     * mov ds, [0xff+bx+si]
+     *  -Exp : 8E 58 FF 00
+     *  -Rel : 8E
+     */
     codeEditor->setFont(QFont("Arial", 20));
     ui->setupUi(this);
     setCentralWidget(codeEditor);
 
-    Instruction *i(new Mov("mov ax, ds"));
+    Instruction *i(new Mov("mov ds, [bx+si+0xff8f]"));
     qDebug() << i->getCodeLine() << i->process();
-    i->setCodeLine("mov ax, es");
+    i->setCodeLine("mov ds, [bx+si+0xff7f]");
     qDebug() << i->getCodeLine() << i->process();
-    i->setCodeLine("mov ax, cs");
-    qDebug() << i->getCodeLine() << i->process();
-    i->setCodeLine("mov ax, ss");
-    qDebug() << i->getCodeLine() << i->process();
-    i->setCodeLine("mov ss, ax");
-    qDebug() << i->getCodeLine() << i->process();
-    i->setCodeLine("mov ds, bx");
-    qDebug() << i->getCodeLine() << i->process();
+    /* i->setCodeLine("mov ds, [0xff+bp+di]"); */
+    /* qDebug() << i->getCodeLine() << i->process(); */
     delete i;
 }
 

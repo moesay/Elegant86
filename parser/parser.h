@@ -45,8 +45,6 @@ const static QVector<QString> Regs16 {"AX", "BX", "CX", "DX", "SP", "BP", "SI", 
 const static QVector<QString> Regs8  {"AH", "AL", "BH", "BL", "CH", "CL", "DH", "DL"};
 const static QVector<QString> SegRegs {"ES", "CS", "SS", "DS"};
 
-//-------------------------------------------------------
-
 class Instruction {
     public:
         Instruction(const QString& codeLine) : codeLine(codeLine){}
@@ -73,7 +71,6 @@ class Instruction {
         QString codeLine;
 };
 
-//-------------------------------------------------------
 
 class Mov : public Instruction {
     public:

@@ -143,16 +143,22 @@ QString Mov::process() {
             if(displacment.size() == 1 && AddrArgs.size() == 1) {mod = 0x00;}
             if(displacment.size() == 0 && AddrArgs.size() == 1) {mod = 0x00;}
             /* The 16 bit displacment doesn't produce a (02 MOD code)
-             * To be checked later */
-            else if (displacment.first().toInt(0, 16) <= 15) mod = 0x01;
-            else if (displacment.first().toInt(0, 16) > 15 ) mod = 0x01;
+             * To be checked later
+             * THERE IS SOME THING HARD HERE*/
+            else if (displacment.first().toInt(0, 16) <= 65407 && AddrArgs.size() > 1) mod = 0x02;
+            else if (displacment.first().toInt(0, 16) >= 65423 && AddrArgs.size() > 1) mod = 0x01; //and remove the upper part of the displacment
         }
-
         if(destIsMemAddr) {
-            reg = getGpRegCode(secondOp);
+            if(secondOpType == OperandType::segReg)
+                reg = getSegRegCode(secondOp);
+            else
+                reg = getGpRegCode(secondOp);
             modregrm = modRegRmGenerator(mod, reg, rmGenerator(firstOp));
         } else {
-            reg = getGpRegCode(firstOp);
+            if(firstOpType == OperandType::segReg)
+                reg = getSegRegCode(firstOp);
+            else
+                reg = getGpRegCode(firstOp);
             modregrm = modRegRmGenerator(mod, reg, rmGenerator(secondOp));
         }
 

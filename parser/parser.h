@@ -11,15 +11,35 @@
 #include <sstream>
 
 //TODO : Edit the padding, 0xA -> 0xA0
-inline static QString hexToStr (const uchar& param) {
+inline static QString hexToStr (const int& param) {
     std::stringstream ss;
-    ss << std::hex << ((param & 0xf0) >> 4);
-    ss << std::hex << ((param & 0x0f) >> 0);
+    if(param > 0xFF) {
+        ss << std::hex << ((param & 0x00f0) >> 4);
+        ss << std::hex << ((param & 0x000f) >> 0);
+        ss << std::hex << ((param & 0xf000) >> 12);
+        ss << std::hex << ((param & 0x0f00) >> 8);
+    } else {
+        ss << std::hex << ((param & 0x00f0) >> 4);
+        ss << std::hex << ((param & 0x000f) >> 0);
+    }
     if (ss.str().length() % 2) {
         return "0" + QString::fromStdString(ss.str()).toUpper();
     }
     return QString::fromStdString(ss.str()).toUpper();
 }
+//FFEE
+struct Displacment {
+    QString upperByte;
+    QString lowerByte;
+    QString fullLength;
+
+    void processDisplacment(const QString& param) {
+        std::stringstream ss;
+        if(param.length() >= 2)
+            upperByte = param;
+
+    }
+};
 
 enum OperandType {
     Mem8, Mem16,
@@ -32,8 +52,9 @@ const static std::array<QString, 9> Operands{"MEM", "MEM", "REG8", "REG16", "IMM
 
 const std::unordered_map<std::string, uchar>segRegsHex { {"ES", 0x00}, {"CS", 0x01}, {"SS", 0x02}, {"DS", 0x03} };
 
-static std::unordered_map<std::string, uchar> mod00 {{"BX+SI", 0x00}, {"BX+DI", 0x01}, {"BP+SI", 0x02}, {"BP+DI", 0x03},
-    {"SI", 0x04}, {"DI", 0x05}, {"DA", 0x06}, {"BX", 0x07}};
+static std::unordered_map<std::string, uchar> mod00 {
+    {"BX+SI", 0x00}, {"BX+DI", 0x01}, {"BP+SI", 0x02}, {"BP+DI", 0x03},
+        {"SI",    0x04}, {"DI",    0x05}, {"DA",    0x06}, {"BX",    0x07}};
 
 static std::unordered_map<std::string, uchar> gpRegsHex {
     {"AL", 0x00}, {"AX", 0x00}, {"CL", 0x01}, {"CX", 0x01},
@@ -81,8 +102,8 @@ class Mov : public Instruction {
 
     private:
         std::unordered_map<std::string, uchar> LUT{
-                //all the reg-reg are done
-                {"REG8-REG8",   0X88}, {"MEM-REG8",     0X88},
+            //all the reg-reg are done
+            {"REG8-REG8",   0X88}, {"MEM-REG8",     0X88},
                 {"REG16-REG16", 0X89}, {"MEM-REG16",    0X89},
                 {"REG8-REG8",   0X8A}, {"REG8-MEM",     0X8A},
                 {"REG16-REG16", 0X8B}, {"REG16-MEM",    0X8B},

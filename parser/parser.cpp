@@ -73,11 +73,19 @@ uchar Instruction::modRegRmGenerator(const uchar& mod, const uchar& reg, const u
     return ((mod << 6) | (reg << 3) | (rm));
 }
 
+/*
+ * ERROR DISCREPTION :
+ *      WHEN PASSING A 4 DIGITS HEX NUMBER TO HEXTOSTR, IT TURNCATES IT INTO
+ *      2 DIGITS ONLY BECAUSE ITS ARGUMENT IS UCHAR, FF MAXIMUM LENGTH
+ *
+ *      POSSIBLE SOLUTION : IMPLEMENT A DISPLACMENT MANAGER
+ */
 QString Mov::process() {
     uchar modregrm;
     uchar mod = 0x00;
-    QString processedLine;
+    QString machineCode;
     uchar opcode;
+    Displacment displacment;
     //split the instruction into
     auto [mnemonic, firstOp, secondOp] = threeTokens();
     //get the operand type. is it a reg16, reg8, mem address, segreg or what?
@@ -91,9 +99,9 @@ QString Mov::process() {
         //the mod is indeed 3, and the machine code is 2 bytes
         //the opcode, and the modregrm byte
         opcode = getOpcode(generalExpression);
-        processedLine.append(hexToStr(opcode));
-        processedLine.append(hexToStr(modRegRmGenerator(0x3, getGpRegCode(firstOp), getGpRegCode(secondOp))));
-        return processedLine;
+        machineCode.append(hexToStr(opcode));
+        machineCode.append(hexToStr(modRegRmGenerator(0x3, getGpRegCode(firstOp), getGpRegCode(secondOp))));
+        return machineCode;
     }
 
     //if the first operand is reg8 and the second is immed8
@@ -101,17 +109,17 @@ QString Mov::process() {
         //build an expression that holds that reg name
         //because each 8bit reg has its own instruction
         opcode = getOpcode(firstOp+"-IMMED8");
-        processedLine.append(hexToStr(opcode));
-        processedLine.append(secondOp);
-        return processedLine;
+        machineCode.append(hexToStr(opcode));
+        machineCode.append(secondOp);
+        return machineCode;
     }
 
     else if(generalExpression=="REG16-IMMED16" || generalExpression=="REG16-IMMED8") {
         opcode = getOpcode(firstOp.toUpper()+"-IMMED16");
-        processedLine.append(hexToStr(opcode)); //the instruction machine code, in the case its mov XX, XX is any 8 bit reg
-        processedLine.append(secondOp);
+        machineCode.append(hexToStr(opcode)); //the instruction machine code, in the case its mov XX, XX is any 8 bit reg
+        machineCode.append(secondOp);
 
-        return processedLine;
+        return machineCode;
     }
 
     else if(generalExpression.startsWith("MEM") || generalExpression.endsWith("MEM")) {
@@ -119,15 +127,15 @@ QString Mov::process() {
         QStringList AddrArgs;
         uchar reg;
 
-        if (firstOp == "AL" && !secondOp.contains('+')) { processedLine.append(hexToStr(getOpcode(firstOp+"-MEM")));
-            processedLine.append(extractDisplacment(secondOp)); return processedLine;}
-        if (firstOp == "AX" && !secondOp.contains('+')) { processedLine.append(hexToStr(getOpcode(firstOp+"-MEM")));
-            processedLine.append(extractDisplacment(secondOp)); return processedLine;}
+        if (firstOp == "AL" && !secondOp.contains('+')) { machineCode.append(hexToStr(getOpcode(firstOp+"-MEM")));
+            machineCode.append(extractDisplacment(secondOp)); return machineCode;}
+        if (firstOp == "AX" && !secondOp.contains('+')) { machineCode.append(hexToStr(getOpcode(firstOp+"-MEM")));
+            machineCode.append(extractDisplacment(secondOp)); return machineCode;}
 
-        if(secondOp == "AL" && !firstOp.contains('+')) { processedLine.append(hexToStr(getOpcode("MEM-"+secondOp)));
-            processedLine.append(extractDisplacment(firstOp)); return processedLine;}
-        if(secondOp == "AX" && !firstOp.contains('+')) { processedLine.append(hexToStr(getOpcode("MEM-"+secondOp)));
-            processedLine.append(extractDisplacment(firstOp)); return processedLine;}
+        if(secondOp == "AL" && !firstOp.contains('+')) { machineCode.append(hexToStr(getOpcode("MEM-"+secondOp)));
+            machineCode.append(extractDisplacment(firstOp)); return machineCode;}
+        if(secondOp == "AX" && !firstOp.contains('+')) { machineCode.append(hexToStr(getOpcode("MEM-"+secondOp)));
+            machineCode.append(extractDisplacment(firstOp)); return machineCode;}
 
         if(destIsMemAddr) {
             firstOp.remove("["); firstOp.remove("]");
@@ -142,11 +150,13 @@ QString Mov::process() {
             if(displacment.size() == 0 && AddrArgs.size() == 2) {mod = 0x00;}
             if(displacment.size() == 1 && AddrArgs.size() == 1) {mod = 0x00;}
             if(displacment.size() == 0 && AddrArgs.size() == 1) {mod = 0x00;}
-            /* The 16 bit displacment doesn't produce a (02 MOD code)
-             * To be checked later
-             * THERE IS SOME THING HARD HERE*/
             else if (displacment.first().toInt(0, 16) <= 65407 && AddrArgs.size() > 1) mod = 0x02;
-            else if (displacment.first().toInt(0, 16) >= 65423 && AddrArgs.size() > 1) mod = 0x01; //and remove the upper part of the displacment
+            else if (displacment.first().toInt(0, 16) >= 65423 && AddrArgs.size() > 1) {
+                //change the mod to 0x01 and trim the displacment as we already know, its 16 bit dsip.
+                mod = 0x01;
+                int displacmentMinusFF = displacment.first().toInt(0, 16) - 0xFF00;
+                displacment.first() = hexToStr(displacmentMinusFF);
+            }
         }
         if(destIsMemAddr) {
             if(secondOpType == OperandType::segReg)
@@ -163,28 +173,28 @@ QString Mov::process() {
         }
 
         opcode = getOpcode(generalExpression);
-        processedLine.append(hexToStr(opcode));
-        processedLine.append(hexToStr(modregrm));
+        machineCode.append(hexToStr(opcode));
+        machineCode.append(hexToStr(modregrm));
         if(!displacment.empty())
-            processedLine.append(hexToStr(displacment.first().toInt(0, 16)));
-        return processedLine;
+            machineCode.append(hexToStr(displacment.first().toInt(0, 16)));
+        return machineCode;
     }
 
     else if (generalExpression == "REG16-SEGREG") {
         opcode = getOpcode(generalExpression);
         modregrm = modRegRmGenerator(0x03, getSegRegCode(secondOp), getGpRegCode(firstOp));
-        processedLine.append(hexToStr(opcode)); processedLine.append(hexToStr(modregrm));
-        return processedLine;
+        machineCode.append(hexToStr(opcode)); machineCode.append(hexToStr(modregrm));
+        return machineCode;
     }
 
     else if (generalExpression == "SEGREG-REG16") {
         opcode = getOpcode(generalExpression);
         modregrm = modRegRmGenerator(0x03, getSegRegCode(firstOp), getGpRegCode(secondOp));
-        processedLine.append(hexToStr(opcode)); processedLine.append(hexToStr(modregrm));
-        return processedLine;
+        machineCode.append(hexToStr(opcode)); machineCode.append(hexToStr(modregrm));
+        return machineCode;
     }
 
-    return processedLine;
+    return machineCode;
 }
 
 uchar Mov::getOpcode(const QString& param, bool *ok) {

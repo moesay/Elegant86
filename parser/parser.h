@@ -10,9 +10,19 @@
 #include <unordered_map>
 #include <sstream>
 
-//TODO : Edit the padding, 0xA -> 0xA0
-inline static QString hexToStr (const int& param) {
+enum HexType {
+    Address, OpCode
+};
+
+template <class T>
+QString hexToStr (T param, HexType ht = HexType::OpCode) {
     std::stringstream ss;
+
+    //added for aligment
+    if(param >= 0xFF80) {
+        param &= (param-0xff00);
+    }
+
     if(param > 0xFF) {
         ss << std::hex << ((param & 0x00f0) >> 4);
         ss << std::hex << ((param & 0x000f) >> 0);
@@ -22,24 +32,17 @@ inline static QString hexToStr (const int& param) {
         ss << std::hex << ((param & 0x00f0) >> 4);
         ss << std::hex << ((param & 0x000f) >> 0);
     }
+
+    if ((param > 0x7F) && (param < 0xFF80) && (ht==HexType::Address && ss.str().length() != 4) && (param != 0xFF)) {
+        ss.seekg(0);
+        ss << "00";
+    }
+
     if (ss.str().length() % 2) {
         return "0" + QString::fromStdString(ss.str()).toUpper();
     }
     return QString::fromStdString(ss.str()).toUpper();
 }
-//FFEE
-struct Displacment {
-    QString upperByte;
-    QString lowerByte;
-    QString fullLength;
-
-    void processDisplacment(const QString& param) {
-        std::stringstream ss;
-        if(param.length() >= 2)
-            upperByte = param;
-
-    }
-};
 
 enum OperandType {
     Mem8, Mem16,
@@ -53,11 +56,11 @@ const static std::array<QString, 9> Operands{"MEM", "MEM", "REG8", "REG16", "IMM
 const std::unordered_map<std::string, uchar>segRegsHex { {"ES", 0x00}, {"CS", 0x01}, {"SS", 0x02}, {"DS", 0x03} };
 
 static std::unordered_map<std::string, uchar> mod00 {
-    {"BX+SI", 0x00}, {"BX+DI", 0x01}, {"BP+SI", 0x02}, {"BP+DI", 0x03},
+        {"BX+SI", 0x00}, {"BX+DI", 0x01}, {"BP+SI", 0x02}, {"BP+DI", 0x03},
         {"SI",    0x04}, {"DI",    0x05}, {"DA",    0x06}, {"BX",    0x07}};
 
 static std::unordered_map<std::string, uchar> gpRegsHex {
-    {"AL", 0x00}, {"AX", 0x00}, {"CL", 0x01}, {"CX", 0x01},
+        {"AL", 0x00}, {"AX", 0x00}, {"CL", 0x01}, {"CX", 0x01},
         {"DL", 0x02}, {"DX", 0x02}, {"BL", 0x03}, {"BX", 0x03},
         {"AH", 0x04}, {"SP", 0x04}, {"CH", 0x05}, {"BP", 0x05},
         {"DH", 0x06}, {"SI", 0x06}, {"BH", 0x07}, {"DI", 0x07}};
@@ -103,7 +106,7 @@ class Mov : public Instruction {
     private:
         std::unordered_map<std::string, uchar> LUT{
             //all the reg-reg are done
-            {"REG8-REG8",   0X88}, {"MEM-REG8",     0X88},
+                {"REG8-REG8",   0X88}, {"MEM-REG8",     0X88},
                 {"REG16-REG16", 0X89}, {"MEM-REG16",    0X89},
                 {"REG8-REG8",   0X8A}, {"REG8-MEM",     0X8A},
                 {"REG16-REG16", 0X8B}, {"REG16-MEM",    0X8B},
@@ -125,5 +128,4 @@ class Mov : public Instruction {
                 {"SP-IMMED16",  0XBC}, {"BP-IMMED16",    0XBD},
                 {"SI-IMMED16",  0XBE}, {"DI-IMMED16",    0XBF}};
 };
-
 #endif

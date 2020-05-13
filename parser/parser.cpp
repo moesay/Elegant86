@@ -40,6 +40,10 @@ uchar Instruction::rmGenerator(const QString& param) {
         else if(argList.contains("BX") && argList.contains("DI")) return mod00["BX+DI"];
         else if(argList.contains("BP") && argList.contains("SI")) return mod00["BP+SI"];
         else if(argList.contains("BP") && argList.contains("DI")) return mod00["BP+DI"];
+
+        else if(argList.contains("BX") && !argList.contains("SI") && !argList.contains("DI")) return mod00["BX"];
+        else if(argList.contains("DI") && !argList.contains("BX") && !argList.contains("BP")) return mod00["DI"];
+        else if(argList.contains("SI") && !argList.contains("BX") && !argList.contains("BP")) return mod00["SI"];
     }
     else if(argList.size() == 1) {
         if(argList.contains("BX")) return mod00["BX"];
@@ -59,7 +63,7 @@ bool Instruction::isImmed8(const QString& param) {
 
 //TODO : make a numirical check insted of checking by th
 //string length
-bool Instruction::isImmed16(const QString& param) {
+inline bool Instruction::isImmed16(const QString& param) {
     return (param.length() > 2 && param.length() <= 4);
 }
 
@@ -85,7 +89,7 @@ QString Mov::process() {
     uchar mod = 0x00;
     QString machineCode;
     uchar opcode;
-    Displacment displacment;
+
     //split the instruction into
     auto [mnemonic, firstOp, secondOp] = threeTokens();
     //get the operand type. is it a reg16, reg8, mem address, segreg or what?
@@ -146,18 +150,20 @@ QString Mov::process() {
         }
         QStringList displacment = AddrArgs.filter(QRegularExpression("0[xX][0-9a-fA-F]"));
 
-        if(!displacment.empty()) {
-            if(displacment.size() == 0 && AddrArgs.size() == 2) {mod = 0x00;}
-            if(displacment.size() == 1 && AddrArgs.size() == 1) {mod = 0x00;}
-            if(displacment.size() == 0 && AddrArgs.size() == 1) {mod = 0x00;}
-            else if (displacment.first().toInt(0, 16) <= 65407 && AddrArgs.size() > 1) mod = 0x02;
-            else if (displacment.first().toInt(0, 16) >= 65423 && AddrArgs.size() > 1) {
-                //change the mod to 0x01 and trim the displacment as we already know, its 16 bit dsip.
-                mod = 0x01;
-                int displacmentMinusFF = displacment.first().toInt(0, 16) - 0xFF00;
-                displacment.first() = hexToStr(displacmentMinusFF);
-            }
+
+        int displacmentValue = displacment.first().toInt(0, 16);
+        if(displacment.empty()) mod = 0x00;         //for bx+si, bp+di ... and si, di as well
+        else if(!displacment.empty()) {
+
+            auto Mod1 = [displacmentValue]()-> bool {
+                return ((displacmentValue >= 0x0000 && displacmentValue <= 0x007F) ||
+                        (displacmentValue >= 0xFF80 && displacmentValue <= 0xFFFF));
+            };
+
+            if(displacment.size() == 1 && AddrArgs.size() == 1) {mod = 0x00;}      // direct address
+            else mod = (Mod1() ? 0x01 : 0x02);       //the rest of the cases!
         }
+
         if(destIsMemAddr) {
             if(secondOpType == OperandType::segReg)
                 reg = getSegRegCode(secondOp);
@@ -176,7 +182,7 @@ QString Mov::process() {
         machineCode.append(hexToStr(opcode));
         machineCode.append(hexToStr(modregrm));
         if(!displacment.empty())
-            machineCode.append(hexToStr(displacment.first().toInt(0, 16)));
+            machineCode.append(hexToStr(displacment.first().toInt(0, 16), HexType::Address));
         return machineCode;
     }
 

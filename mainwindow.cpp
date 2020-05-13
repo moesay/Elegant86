@@ -11,12 +11,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     setCentralWidget(codeEditor);
 
-    Instruction *i(new Mov("mov ds, [bx+si+0xff8f]"));
+    //error \/
+    Instruction *i(new Mov("mov [bx+0xfb], ax"));
     qDebug() << i->getCodeLine() << i->process();
-    i->setCodeLine("mov ds, [bx+si+0xff7f]");
+    i->setCodeLine("mov bx, [bx+0x0fff]");
     qDebug() << i->getCodeLine() << i->process();
-    /* i->setCodeLine("mov ds, [0xff+bp+di]"); */
-    /* qDebug() << i->getCodeLine() << i->process(); */
+    i->setCodeLine("mov bx, [bx+0x1234]");
+    qDebug() << i->getCodeLine() << i->process();
+    i->setCodeLine("mov bx, [bx+0x0006]");
+    qDebug() << i->getCodeLine() << i->process();
+    i->setCodeLine("mov bx, [bx+0xffff]");
+    qDebug() << i->getCodeLine() << i->process();
     delete i;
 }
 

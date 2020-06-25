@@ -104,7 +104,7 @@ QString Mov::process() {
         //the opcode, and the modregrm byte
         opcode = getOpcode(generalExpression);
         machineCode.append(hexToStr(opcode));
-        machineCode.append(hexToStr(modRegRmGenerator(0x3, getGpRegCode(firstOp), getGpRegCode(secondOp))));
+        machineCode.append(hexToStr(modRegRmGenerator(0x3, getGpRegCode(secondOp), getGpRegCode(firstOp))));
         return machineCode;
     }
 
@@ -128,41 +128,46 @@ QString Mov::process() {
 
     else if(generalExpression.startsWith("MEM") || generalExpression.endsWith("MEM")) {
         bool destIsMemAddr = generalExpression.startsWith("MEM");
-        QStringList AddrArgs;
+        QStringList addrArgs;
         uchar reg;
-
-        if (firstOp == "AL" && !secondOp.contains('+')) { machineCode.append(hexToStr(getOpcode(firstOp+"-MEM")));
-            machineCode.append(extractDisplacment(secondOp)); return machineCode;}
-        if (firstOp == "AX" && !secondOp.contains('+')) { machineCode.append(hexToStr(getOpcode(firstOp+"-MEM")));
-            machineCode.append(extractDisplacment(secondOp)); return machineCode;}
-
-        if(secondOp == "AL" && !firstOp.contains('+')) { machineCode.append(hexToStr(getOpcode("MEM-"+secondOp)));
-            machineCode.append(extractDisplacment(firstOp)); return machineCode;}
-        if(secondOp == "AX" && !firstOp.contains('+')) { machineCode.append(hexToStr(getOpcode("MEM-"+secondOp)));
-            machineCode.append(extractDisplacment(firstOp)); return machineCode;}
 
         if(destIsMemAddr) {
             firstOp.remove("["); firstOp.remove("]");
-            AddrArgs = firstOp.split("+");
+            addrArgs = firstOp.split("+");
         } else {
             secondOp.remove("["); secondOp.remove("]");
-            AddrArgs = secondOp.split("+");
+            addrArgs = secondOp.split("+");
         }
-        QStringList displacment = AddrArgs.filter(QRegularExpression("0[xX][0-9a-fA-F]"));
 
+        QStringList displacment = addrArgs.filter(QRegularExpression("0[xX][0-9a-fA-F]"));
+        bool directAddress = addrArgs.size() == 1;
 
-        int displacmentValue = displacment.first().toInt(0, 16);
+        int displacmentValue = 0;
+        if(displacment.size() >= 1)
+            displacmentValue = displacment.first().toInt(0, 16);
+
+        auto Mod1 = [displacmentValue]()-> bool {
+            return ((displacmentValue >= 0x0000 && displacmentValue <= 0x007F) ||
+                    (displacmentValue >= 0xFF80 && displacmentValue <= 0xFFFF));
+        };
+
         if(displacment.empty()) mod = 0x00;         //for bx+si, bp+di ... and si, di as well
         else if(!displacment.empty()) {
-
-            auto Mod1 = [displacmentValue]()-> bool {
-                return ((displacmentValue >= 0x0000 && displacmentValue <= 0x007F) ||
-                        (displacmentValue >= 0xFF80 && displacmentValue <= 0xFFFF));
-            };
-
-            if(displacment.size() == 1 && AddrArgs.size() == 1) {mod = 0x00;}      // direct address
+            if(displacment.size() == 1 && addrArgs.size() == 1) mod = 0x00; //direct address;
             else mod = (Mod1() ? 0x01 : 0x02);       //the rest of the cases!
         }
+
+        //only for direct address with the accumelator
+        if (firstOp == "AL" && secondOp.contains('X')) { machineCode.append(hexToStr(getOpcode(firstOp+"-MEM")));
+            machineCode.append(hexToStr(extractDisplacment(secondOp).toInt(0, 16), HexType::DirectAddress)); return machineCode;}
+        if (firstOp == "AX" && secondOp.contains('X')) { machineCode.append(hexToStr(getOpcode(firstOp+"-MEM")));
+            machineCode.append(hexToStr(extractDisplacment(secondOp).toInt(0, 16), HexType::DirectAddress)); return machineCode;}
+
+        if(secondOp == "AL" && firstOp.contains('X')) { machineCode.append(hexToStr(getOpcode("MEM-"+secondOp)));
+            machineCode.append(hexToStr(extractDisplacment(firstOp).toInt(0, 16), HexType::DirectAddress)); return machineCode;}
+        if(secondOp == "AX" && firstOp.contains('X')) { machineCode.append(hexToStr(getOpcode("MEM-"+secondOp)));
+            machineCode.append(hexToStr(extractDisplacment(firstOp).toInt(0, 16), HexType::DirectAddress)); return machineCode;}
+        //---
 
         if(destIsMemAddr) {
             if(secondOpType == OperandType::segReg)
@@ -182,7 +187,7 @@ QString Mov::process() {
         machineCode.append(hexToStr(opcode));
         machineCode.append(hexToStr(modregrm));
         if(!displacment.empty())
-            machineCode.append(hexToStr(displacment.first().toInt(0, 16), HexType::Address));
+            machineCode.append(hexToStr(displacment.first().toInt(0, 16), (directAddress ? HexType::DirectAddress : Address)));
         return machineCode;
     }
 
@@ -249,3 +254,5 @@ uchar Instruction::getSegRegCode(const QString& param, bool *ok) {
 }
 
 Mov::~Mov(){}
+Mov::Mov(){}
+Instruction::Instruction(){}

@@ -11,17 +11,17 @@
 #include <sstream>
 
 enum HexType {
-    Address, OpCode
+    Address, OpCode, DirectAddress
 };
 
 template <class T>
 QString hexToStr (T param, HexType ht = HexType::OpCode) {
     std::stringstream ss;
-
     //added for aligment
-    if(param >= 0xFF80) {
-        param &= (param-0xff00);
-    }
+
+    /* if(param >= 0xFF80) { */
+    /*     param &= (param-0xff00); */
+    /* } */
 
     if(param > 0xFF) {
         ss << std::hex << ((param & 0x00f0) >> 4);
@@ -36,6 +36,12 @@ QString hexToStr (T param, HexType ht = HexType::OpCode) {
     if ((param > 0x7F) && (param < 0xFF80) && (ht==HexType::Address && ss.str().length() != 4) && (param != 0xFF)) {
         ss.seekg(0);
         ss << "00";
+    }
+
+    //the direct address has to be two bytes.
+    if(ht == HexType::DirectAddress) {
+        ss.seekg(0);
+        while(ss.str().length() < 4) ss << "0";
     }
 
     if (ss.str().length() % 2) {
@@ -72,6 +78,7 @@ const static QVector<QString> SegRegs {"ES", "CS", "SS", "DS"};
 class Instruction {
     public:
         Instruction(const QString& codeLine) : codeLine(codeLine){}
+        Instruction();
         virtual QString process() = 0;
         bool isImmed8(const QString&);
         bool isImmed16(const QString&);
@@ -98,6 +105,7 @@ class Instruction {
 
 class Mov : public Instruction {
     public:
+        Mov();
         using Instruction::Instruction;
         QString process() override;
         uchar getOpcode(const QString&, bool* ok = nullptr) override;
@@ -116,7 +124,7 @@ class Mov : public Instruction {
                 {"SEGREG-MEM",   0X8E}, {"SEGREG-REG16", 0X8E},
 
                 {"AL-MEM",         0XA0}, {"AX-MEM",          0XA1},
-                {"MEM-AL"/*MEM8*/, 0XA2}, {"MEM-AL"/*MEM16*/, 0XA3},
+                {"MEM-AL"/*MEM8*/, 0XA2}, {"MEM-AX"/*MEM16*/, 0XA3},
 
                 //done
                 {"AL-IMMED8",   0XB0}, {"CL-IMMED8",     0XB1},

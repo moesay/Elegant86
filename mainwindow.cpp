@@ -10,19 +10,27 @@ MainWindow::MainWindow(QWidget *parent) :
     codeEditor->setFont(QFont("Arial", 20));
     ui->setupUi(this);
     setCentralWidget(codeEditor);
+    std::vector<QString> code {
+        "mov ax, bx",
+        "mov cx, dx",
+        "mov dh, [0xd]",
+        "mov [di+bp], ax",
+        "mov [0x77+di+bx], dx",
+        "mov [bx+si], cx",
+        "mov dh, dl",
+        "mov cx, ax",
+        "mov ax, ds"
+    };
 
-    //error \/
-    Instruction *i(new Mov("mov [bx+0xfb], ax"));
-    qDebug() << i->getCodeLine() << i->process();
-    i->setCodeLine("mov bx, [bx+0x0fff]");
-    qDebug() << i->getCodeLine() << i->process();
-    i->setCodeLine("mov bx, [bx+0x1234]");
-    qDebug() << i->getCodeLine() << i->process();
-    i->setCodeLine("mov bx, [bx+0x0006]");
-    qDebug() << i->getCodeLine() << i->process();
-    i->setCodeLine("mov bx, [bx+0xffff]");
-    qDebug() << i->getCodeLine() << i->process();
+    Instruction *i;
+    i = new Mov();
+    for(auto line: code) {
+        i->setCodeLine(line);
+        qDebug() << line << i->process();
+    }
+
     delete i;
+    exit(1);
 }
 
 MainWindow::~MainWindow()

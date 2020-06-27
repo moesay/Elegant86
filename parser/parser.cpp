@@ -77,13 +77,6 @@ uchar Instruction::modRegRmGenerator(const uchar& mod, const uchar& reg, const u
     return ((mod << 6) | (reg << 3) | (rm));
 }
 
-/*
- * ERROR DISCREPTION :
- *      WHEN PASSING A 4 DIGITS HEX NUMBER TO HEXTOSTR, IT TURNCATES IT INTO
- *      2 DIGITS ONLY BECAUSE ITS ARGUMENT IS UCHAR, FF MAXIMUM LENGTH
- *
- *      POSSIBLE SOLUTION : IMPLEMENT A DISPLACMENT MANAGER
- */
 QString Mov::process() {
     uchar modregrm;
     uchar mod = 0x00;
@@ -121,7 +114,7 @@ QString Mov::process() {
     else if(generalExpression=="REG16-IMMED16" || generalExpression=="REG16-IMMED8") {
         opcode = getOpcode(firstOp.toUpper()+"-IMMED16");
         machineCode.append(hexToStr(opcode)); //the instruction machine code, in the case its mov XX, XX is any 8 bit reg
-        machineCode.append(secondOp);
+        machineCode.append(hexToStr(secondOp.toInt(nullptr, 16), HexType::DirectAddress));
 
         return machineCode;
     }
@@ -139,7 +132,10 @@ QString Mov::process() {
             addrArgs = secondOp.split("+");
         }
 
-        QStringList displacment = addrArgs.filter(QRegularExpression("0[xX][0-9a-fA-F]"));
+        /* QStringList displacment = addrArgs.filter(QRegularExpression("0[xX][0-9a-fA-F]")); */
+        QStringList displacment = addrArgs.filter(QRegularExpression("[0-9a-fA-F]"));
+        hexValidator(displacment);
+
         bool directAddress = addrArgs.size() == 1;
 
         int displacmentValue = 0;
@@ -158,14 +154,17 @@ QString Mov::process() {
         }
 
         //only for direct address with the accumelator
-        if (firstOp == "AL" && secondOp.contains('X')) { machineCode.append(hexToStr(getOpcode(firstOp+"-MEM")));
+        //the second param check must change. it checks for X and this is true for all registers
+        // bX, cX and so on.
+        // possible solution : createing a IsAddress(secondOp) function.
+        if (firstOp == "AL" && isHexValue(secondOp)) { machineCode.append(hexToStr(getOpcode(firstOp+"-MEM")));
             machineCode.append(hexToStr(extractDisplacment(secondOp).toInt(0, 16), HexType::DirectAddress)); return machineCode;}
-        if (firstOp == "AX" && secondOp.contains('X')) { machineCode.append(hexToStr(getOpcode(firstOp+"-MEM")));
+        if (firstOp == "AX" && isHexValue(secondOp)) { machineCode.append(hexToStr(getOpcode(firstOp+"-MEM")));
             machineCode.append(hexToStr(extractDisplacment(secondOp).toInt(0, 16), HexType::DirectAddress)); return machineCode;}
 
-        if(secondOp == "AL" && firstOp.contains('X')) { machineCode.append(hexToStr(getOpcode("MEM-"+secondOp)));
+        if(secondOp == "AL" && isHexValue(firstOp)) { machineCode.append(hexToStr(getOpcode("MEM-"+secondOp)));
             machineCode.append(hexToStr(extractDisplacment(firstOp).toInt(0, 16), HexType::DirectAddress)); return machineCode;}
-        if(secondOp == "AX" && firstOp.contains('X')) { machineCode.append(hexToStr(getOpcode("MEM-"+secondOp)));
+        if(secondOp == "AX" && isHexValue(firstOp)) { machineCode.append(hexToStr(getOpcode("MEM-"+secondOp)));
             machineCode.append(hexToStr(extractDisplacment(firstOp).toInt(0, 16), HexType::DirectAddress)); return machineCode;}
         //---
 
@@ -230,12 +229,10 @@ uchar Instruction::getGpRegCode(const QString& param, bool *ok) {
 
 QString Instruction::extractDisplacment(const QString& param, bool *ok) {
     QStringList splittedAddress = param.split('+');
-    QStringList filteredDisplacment = splittedAddress.filter(QRegularExpression("0[xX][0-9a-fA-F]"));
+    QStringList filteredDisplacment = splittedAddress.filter(QRegularExpression("[0-9a-fA-F]"));
 
     if(filteredDisplacment.size() > 0) {
         filteredDisplacment.first().remove(']'); filteredDisplacment.first().remove('[');
-        if(filteredDisplacment.first().toLower().startsWith("0x")) {
-            filteredDisplacment.first().remove(0, 2); }
         if(ok != nullptr) *ok=true;
         return filteredDisplacment.first();
     }
@@ -251,6 +248,20 @@ uchar Instruction::getSegRegCode(const QString& param, bool *ok) {
     }
     if(ok != nullptr) *ok = false;
     return 0x00;
+}
+
+bool Instruction::isHexValue(const QString& param) {
+    bool b;
+    param.toInt(&b, 16);
+    return b;
+}
+
+void Instruction::hexValidator(QStringList& param) {
+    param.erase(
+            std::remove_if(
+                std::begin(param),
+                std::end(param),
+                [this](QString const &p) {return !this->isHexValue(p);}), std::end(param));
 }
 
 Mov::~Mov(){}

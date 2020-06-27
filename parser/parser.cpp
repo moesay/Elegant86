@@ -23,11 +23,11 @@ std::tuple<QString, QString, QString> Instruction::threeTokens() {
 //tested
 enum OperandType Instruction::getOperandType(const QString& operand) {
     if(Regs8.contains(operand.trimmed().toUpper())) return OperandType::Reg8;
-    if(Regs16.contains(operand.trimmed().toUpper())) return OperandType::Reg16;
-    if(SegRegs.contains(operand.trimmed().toUpper())) return OperandType::segReg;
-    if(isMemAddr(operand)) return OperandType::Mem16;
-    if(isImmed8(operand)) return OperandType::Immed8;
-    if(isImmed16(operand)) return OperandType::Immed16;
+    else if(Regs16.contains(operand.trimmed().toUpper())) return OperandType::Reg16;
+    else if(SegRegs.contains(operand.trimmed().toUpper())) return OperandType::segReg;
+    else if(isMemAddr(operand)) return OperandType::MemAddr;
+    else if(isImmed8(operand)) return OperandType::Immed8;
+    else if(isImmed16(operand)) return OperandType::Immed16;
     return OperandType::Unknown;
 }
 
@@ -55,16 +55,12 @@ uchar Instruction::rmGenerator(const QString& param) {
     return 0xff;
 }
 
-//TODO : make a numirical check insted of checking by th
-//string length
 bool Instruction::isImmed8(const QString& param) {
-    return (param.length() <= 2);
+    return isHexValue(param) && (param.length() <= 2);
 }
 
-//TODO : make a numirical check insted of checking by th
-//string length
 inline bool Instruction::isImmed16(const QString& param) {
-    return (param.length() > 2 && param.length() <= 4);
+    return isHexValue(param) && (param.length() > 2 && param.length() <= 4);
 }
 
 void Instruction::setCodeLine(const QString& param) {
@@ -101,17 +97,14 @@ QString Mov::process() {
         return machineCode;
     }
 
-    //if the first operand is reg8 and the second is immed8
-    else if(generalExpression=="REG8-IMMED8") {
-        //build an expression that holds that reg name
-        //because each 8bit reg has its own instruction
+    else if(firstOpType==OperandType::Reg8 && secondOpType==OperandType::Immed8) {
         opcode = getOpcode(firstOp+"-IMMED8");
         machineCode.append(hexToStr(opcode));
         machineCode.append(secondOp);
         return machineCode;
     }
 
-    else if(generalExpression=="REG16-IMMED16" || generalExpression=="REG16-IMMED8") {
+    else if(firstOpType==OperandType::Reg16 && (secondOp==OperandType::Immed16 || secondOpType==Immed8)){
         opcode = getOpcode(firstOp.toUpper()+"-IMMED16");
         machineCode.append(hexToStr(opcode)); //the instruction machine code, in the case its mov XX, XX is any 8 bit reg
         machineCode.append(hexToStr(secondOp.toInt(nullptr, 16), HexType::DirectAddress));
@@ -119,8 +112,8 @@ QString Mov::process() {
         return machineCode;
     }
 
-    else if(generalExpression.startsWith("MEM") || generalExpression.endsWith("MEM")) {
-        bool destIsMemAddr = generalExpression.startsWith("MEM");
+    else if(firstOpType==OperandType::MemAddr || secondOpType==OperandType::MemAddr) {
+        bool destIsMemAddr = firstOpType==OperandType::MemAddr;
         QStringList addrArgs;
         uchar reg;
 
@@ -132,7 +125,6 @@ QString Mov::process() {
             addrArgs = secondOp.split("+");
         }
 
-        /* QStringList displacment = addrArgs.filter(QRegularExpression("0[xX][0-9a-fA-F]")); */
         QStringList displacment = addrArgs.filter(QRegularExpression("[0-9a-fA-F]"));
         hexValidator(displacment);
 
@@ -153,10 +145,6 @@ QString Mov::process() {
             else mod = (Mod1() ? 0x01 : 0x02);       //the rest of the cases!
         }
 
-        //only for direct address with the accumelator
-        //the second param check must change. it checks for X and this is true for all registers
-        // bX, cX and so on.
-        // possible solution : createing a IsAddress(secondOp) function.
         if (firstOp == "AL" && isHexValue(secondOp)) { machineCode.append(hexToStr(getOpcode(firstOp+"-MEM")));
             machineCode.append(hexToStr(extractDisplacment(secondOp).toInt(0, 16), HexType::DirectAddress)); return machineCode;}
         if (firstOp == "AX" && isHexValue(secondOp)) { machineCode.append(hexToStr(getOpcode(firstOp+"-MEM")));
@@ -190,14 +178,14 @@ QString Mov::process() {
         return machineCode;
     }
 
-    else if (generalExpression == "REG16-SEGREG") {
+    else if(firstOpType==OperandType::Reg16 && secondOpType==OperandType::segReg) {
         opcode = getOpcode(generalExpression);
         modregrm = modRegRmGenerator(0x03, getSegRegCode(secondOp), getGpRegCode(firstOp));
         machineCode.append(hexToStr(opcode)); machineCode.append(hexToStr(modregrm));
         return machineCode;
     }
 
-    else if (generalExpression == "SEGREG-REG16") {
+    else if(firstOpType==OperandType::segReg && secondOpType==OperandType::Reg16) {
         opcode = getOpcode(generalExpression);
         modregrm = modRegRmGenerator(0x03, getSegRegCode(firstOp), getGpRegCode(secondOp));
         machineCode.append(hexToStr(opcode)); machineCode.append(hexToStr(modregrm));

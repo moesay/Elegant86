@@ -17,8 +17,9 @@ enum HexType {
 template <class T>
 QString hexToStr (T param, HexType ht = HexType::OpCode) {
     std::stringstream ss;
-    //added for aligment
 
+
+    //added for aligment
     /* if(param >= 0xFF80) { */
     /*     param &= (param-0xff00); */
     /* } */
@@ -81,7 +82,9 @@ class Instruction {
         Instruction();
         virtual QString process() = 0;
         bool isImmed8(const QString&);
+        void hexValidator(QStringList&);
         bool isImmed16(const QString&);
+        bool isHexValue(const QString&);
         QString extractDisplacment(const QString&, bool *ok = nullptr);
         bool isMemAddr(const QString&);
         enum OperandType getOperandType(const QString&);

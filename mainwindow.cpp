@@ -1,25 +1,37 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "Editor.h"
+#include "Simulate.h"
 #include "parser/parser.h"
 #include <QDebug>
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+MainWindow::MainWindow()
 {
-    codeEditor->setFont(QFont("Arial", 20));
-    ui->setupUi(this);
-    setCentralWidget(codeEditor);
+    tabWidget = new QTabWidget;
+
+    tabWidget->addTab(new Editor(this), tr("Code Editor"));
+    tabWidget->addTab(new Simulate(this), tr("Simulator"));
+
+    setCentralWidget(tabWidget);
+
+    /* Instruction *t = new Mov("mov ds, ax"); //the immediate values processing */
+    /* qDebug() << t->process(); */
+    /* exit(1); */
+
     std::vector<QString> code {
         "mov ax, bx",
-        "mov cx, dx",
-        "mov dh, [0xd]",
-        "mov [di+bp], ax",
-        "mov [0x77+di+bx], dx",
-        "mov [bx+si], cx",
-        "mov dh, dl",
-        "mov cx, ax",
-        "mov ax, ds"
+            "mov cx, [bx+66]",
+            "mov cx, dx",
+            "mov dh, [d]",
+            "mov [di+bp], ax",
+            "mov [77+di+bx], dx",
+            "mov [bx+si], cx",
+            "mov dh, dl",
+            "mov ax, [bx]",
+            "mov cx, ax",
+            "mov ax, ds",
+            "mov si, ax",
+            "mov ds, ax",
+            "mov ax, 10"
     };
 
     Instruction *i;
@@ -30,28 +42,22 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     delete i;
-    exit(1);
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+
 }
 
-void MainWindow::on_action_Open_triggered()
-{
-    QString filename = QFileDialog::getOpenFileName(this, "Open File");
-    QFile file(filename);
-    if(!file.open(QIODevice::ReadOnly | QFile::Text)) {
-        QMessageBox::warning(this, "Error", "Cannot open the file.\n"+file.errorString());
-        return;
-    }
-    QTextStream input(&file);
-    codeEditor->clear();
-    codeEditor->insertPlainText(input.readAll());
-}
-
-void MainWindow::on_action_Simulate_triggered() {
-
+void MainWindow::open() {
+    /* QString filename = QFileDialog::getOpenFileName(this, "Open File"); */
+    /* QFile file(filename); */
+    /* if(!file.open(QIODevice::ReadOnly | QFile::Text)) { */
+    /*     QMessageBox::warning(this, "Error", "Cannot open the file.\n"+file.errorString()); */
+    /*     return; */
+    /* } */
+    /* QTextStream input(&file); */
+    /* codeEditor->clear(); */
+    /* codeEditor->insertPlainText(input.readAll()); */
 }
 

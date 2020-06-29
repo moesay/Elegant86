@@ -1,7 +1,6 @@
 #include "codeeditor.h"
 
-CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit (parent)
-{
+CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit (parent) {
     lineNumber = new LineNumber(this);
 
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);

@@ -52,13 +52,13 @@ QString hexToStr (T param, HexType ht = HexType::OpCode) {
 }
 
 enum OperandType {
-    Mem8, Mem16,
+    MemAddr,
     Reg8, Reg16,
     Immed8, Immed16,
     segReg, Unknown
 };
 
-const static std::array<QString, 9> Operands{"MEM", "MEM", "REG8", "REG16", "IMMED8", "IMMED16", "SEGREG", "UNKNOWN"};
+const static std::array<QString, 9> Operands{"MEM", "REG8", "REG16", "IMMED8", "IMMED16", "SEGREG", "UNKNOWN"};
 
 const std::unordered_map<std::string, uchar>segRegsHex { {"ES", 0x00}, {"CS", 0x01}, {"SS", 0x02}, {"DS", 0x03} };
 

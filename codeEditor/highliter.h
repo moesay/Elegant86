@@ -5,6 +5,7 @@
 #include <QRegularExpression>
 #include <QTextCharFormat>
 #include <QPlainTextEdit>
+
 class Highliter : public QSyntaxHighlighter
 {
     Q_OBJECT
@@ -25,6 +26,7 @@ private:
         QTextCharFormat regsFmt;
         QTextCharFormat commentsFmt;
         QTextCharFormat stringsFmt;
+        QTextCharFormat numbersFmt;
 };
 
 #endif // HIGHLITER_H

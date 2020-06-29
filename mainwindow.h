@@ -1,32 +1,58 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-#include "codeEditor/codeeditor.h"
-
-#include "codeEditor/highliter.h"
 
 #include <QMainWindow>
-
-namespace Ui {
-class MainWindow;
-}
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
-    CodeEditor *codeEditor = new CodeEditor(this);
-
+    explicit MainWindow();
     ~MainWindow();
 
 private slots:
-    void on_action_Open_triggered();
-    void on_action_Simulate_triggered();
+    /* void newFile(); */
+    void open();
+    /* void save(); */
+    /* void saveAs(); */
+    /* void findAndReplace(); */
+    /* void openRecentFile(); */
+    /* void updateStatusBar(); */
+    /* void about(); */
 
 private:
-    Ui::MainWindow *ui;
-    Highliter *h;
+    QTabWidget *tabWidget;
+
+    void createActions();
+    void createMenus();
+    void createContextMenu();
+    void createToolBars();
+    void createStatusBar();
+    void readSettings();
+    void writeSettings();
+    bool loadFile(const QString& fileName);
+    bool saveFile(const QString& fileName);
+    void updateCurrentFileActions();
+    QString strippedName (const QString& fullFileName);
+
+    QStringList recentFiles;
+    QString curFile;
+
+    enum {MaxRecentFiles = 5};
+    QAction *recentFileActions[MaxRecentFiles];
+    QAction *separatorAction;
+
+    QMenu *fileMenu;
+    QMenu *editMenu;
+    QMenu *contextMenu;
+
+    QToolBar *fileToolBar;
+    QToolBar *editToolBar;
+    QAction *newAction;
+    QAction *openAction;
+    QAction *aboutAction;
 };
 
 #endif // MAINWINDOW_H
+

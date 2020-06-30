@@ -47,15 +47,16 @@ Highliter::Highliter(QTextDocument *parent) : QSyntaxHighlighter(parent) {
         hRulesVec.append(rule);
     }
 
-    stringsFmt.setForeground(Qt::darkRed);
-    rule.pattern = QRegularExpression(QStringLiteral("\".*\""));
-    rule.format = stringsFmt;
-    hRulesVec.append(rule);
-
     commentsFmt.setForeground(Qt::green);
     commentsFmt.setBackground(Qt::black);
     rule.format = commentsFmt;
     rule.pattern = QRegularExpression(QStringLiteral(";[^\n]*"));
+    hRulesVec.append(rule);
+
+
+    stringsFmt.setForeground(Qt::darkRed);
+    rule.pattern = QRegularExpression(QStringLiteral("\".*\""));
+    rule.format = stringsFmt;
     hRulesVec.append(rule);
 }
 

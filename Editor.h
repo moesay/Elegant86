@@ -2,9 +2,8 @@
 #define EDITOR_CLASS_H
 
 #include <QtWidgets>
-
-class CodeEditor;
-class Highliter;
+#include "codeEditor/codeeditor.h"
+#include "codeEditor/highliter.h"
 
 class Editor : public QWidget {
     Q_OBJECT

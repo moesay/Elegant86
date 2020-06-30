@@ -1,0 +1,19 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource>
+        <file>images/cut.png</file>
+        <file>images/copy.png</file>
+        <file>images/run.png</file>
+        <file>images/continue.png</file>
+        <file>images/pause.png</file>
+        <file>images/new.png</file>
+        <file>images/open.png</file>
+        <file>images/paste.png</file>
+        <file>images/redo.png</file>
+        <file>images/restart.png</file>
+        <file>images/save.png</file>
+        <file>images/stepInto.png</file>
+        <file>images/stepOut.png</file>
+        <file>images/kill.png</file>
+        <file>images/undo.png</file>
+    </qresource>
+</RCC>

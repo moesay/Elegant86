@@ -7,6 +7,7 @@ QT += widgets core
 TEMPLATE = app
 TARGET = Elegant86
 INCLUDEPATH += .
+RESOURCES = resources.qrc
 
 # You can make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.

@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "Editor.h"
+#include "Simulate.h"
 
 class MainWindow : public QMainWindow
 {
@@ -12,18 +14,35 @@ public:
     ~MainWindow();
 
 private slots:
-    /* void newFile(); */
-    void open();
-    /* void save(); */
-    /* void saveAs(); */
-    /* void findAndReplace(); */
-    /* void openRecentFile(); */
-    /* void updateStatusBar(); */
-    /* void about(); */
+    void newFile();
+    void openFile();
+    void save();
+    void saveAs();
+    void openRecentFile();
+    void Exit();
+
+    void copy();
+    void cut();
+    void paste();
+    void undo();
+    void redo();
+    void pref();
+    void find();
+    void findAndReplace();
+
+    void stepInto();
+    void stepOut();
+    void run();
+    void kill();
+    void pause();
+    void Continue();
+    void updateStatusBar();
+    void about();
 
 private:
     QTabWidget *tabWidget;
-
+    Editor *editorWidget;
+    Simulate *simulateWidget;
     void createActions();
     void createMenus();
     void createContextMenu();
@@ -40,18 +59,43 @@ private:
     QString curFile;
 
     enum {MaxRecentFiles = 5};
-    QAction *recentFileActions[MaxRecentFiles];
+    //file
+    QAction *newAction;
+    QAction *openAction;
+    QAction *saveAction;
     QAction *separatorAction;
+    QAction *recentFileActions[MaxRecentFiles];
+    QAction *saveAsAction;
+    QAction *exitAction;
+    //edit
+    QAction *copyAction;
+    QAction *cutAction;
+    QAction *pasteAction;
+    QAction *undoAction;
+    QAction *redoAction;
+    QAction *prefAction;
+    QAction *findAction;
+    QAction *findAndReplaceAction;
+    //simulate
+    QAction *runAction;
+    QAction *pauseAction;
+    QAction *continueAction;
+    QAction *stepIntoAction;
+    QAction *stepOutAction;
+    QAction *killAction;
+
+    //help
+    QAction *aboutAction;
 
     QMenu *fileMenu;
     QMenu *editMenu;
+    QMenu *SimulateMenu;
+    QMenu *helpMenu;
     QMenu *contextMenu;
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
-    QAction *newAction;
-    QAction *openAction;
-    QAction *aboutAction;
+    QToolBar *simulateToolBar;
 };
 
 #endif // MAINWINDOW_H

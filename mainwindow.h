@@ -16,8 +16,8 @@ public:
 private slots:
     void newFile();
     void openFile();
-    void save();
-    void saveAs();
+    bool save();
+    bool saveAs();
     void openRecentFile();
     void Exit();
 
@@ -43,6 +43,7 @@ private:
     QTabWidget *tabWidget;
     Editor *editorWidget;
     Simulate *simulateWidget;
+    int fileStatus = -1;
     void createActions();
     void createMenus();
     void createContextMenu();
@@ -53,12 +54,19 @@ private:
     bool loadFile(const QString& fileName);
     bool saveFile(const QString& fileName);
     void updateCurrentFileActions();
-    QString strippedName (const QString& fullFileName);
+    /* QString strippedName (const QString& fullFileName); */
+    QString getFileStatus();
+    bool okToContinue();
+    void setCurrentFileName(const QString&);
 
     QStringList recentFiles;
-    QString curFile;
+    QString shownFileName;
+    QString currentFileName;
 
     enum {MaxRecentFiles = 5};
+    enum FileStatus {Modified, Saved, NewFile};
+    enum Mode {Editing, Simulation, Debuging};
+
     //file
     QAction *newAction;
     QAction *openAction;
@@ -67,6 +75,7 @@ private:
     QAction *recentFileActions[MaxRecentFiles];
     QAction *saveAsAction;
     QAction *exitAction;
+
     //edit
     QAction *copyAction;
     QAction *cutAction;
@@ -76,6 +85,7 @@ private:
     QAction *prefAction;
     QAction *findAction;
     QAction *findAndReplaceAction;
+
     //simulate
     QAction *runAction;
     QAction *pauseAction;
@@ -96,6 +106,12 @@ private:
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
     QToolBar *simulateToolBar;
+
+    QLabel *fileStatusLabel;
+    QLabel *cursorLabel;
+    QLabel *totalLinesLabel;
+    QLabel *ModeLabel;
+
 };
 
 #endif // MAINWINDOW_H

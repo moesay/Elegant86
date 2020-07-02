@@ -1,13 +1,15 @@
 #include "mainwindow.h"
 #include "parser/parser.h"
 #include <QDebug>
-#include <QDesktopWidget>
+#include <QCoreApplication>
 
 MainWindow::MainWindow()
 {
+    setWindowTitle(tr("Elegant86[*]"));
     createActions();
     createMenus();
     createToolBars();
+    createStatusBar();
     this->showMaximized();
 
     tabWidget = new QTabWidget;
@@ -21,6 +23,22 @@ MainWindow::MainWindow()
     /* Instruction *t = new Mov("mov ds, ax"); //the immediate values processing */
     /* qDebug() << t->process(); */
     /* exit(1); */
+
+    connect(editorWidget->codeEditor, SIGNAL(cursorPositionChanged()), this, SLOT(updateStatusBar()));
+
+    connect(editorWidget->codeEditor->document(), &QTextDocument::modificationChanged,
+            this, &QWidget::setWindowModified);
+    connect(editorWidget->codeEditor->document(), &QTextDocument::modificationChanged,
+            saveAction, &QAction::setEnabled);
+    connect(editorWidget->codeEditor->document(), &QTextDocument::undoAvailable,
+            undoAction, &QAction::setEnabled);
+    connect(editorWidget->codeEditor->document(), &QTextDocument::redoAvailable,
+            redoAction, &QAction::setEnabled);
+
+    saveAction->setEnabled(editorWidget->codeEditor->document()->isModified());
+    undoAction->setEnabled(editorWidget->codeEditor->document()->isUndoAvailable());
+    redoAction->setEnabled(editorWidget->codeEditor->document()->isRedoAvailable());
+    setWindowModified(editorWidget->codeEditor->document()->isModified());
 
     std::vector<QString> code {
         "mov ax, bx",
@@ -51,103 +69,8 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
-
 }
 
-void MainWindow::createActions() {
-    newAction = new QAction(tr("&New File"), this);
-    newAction->setShortcut(tr("Ctrl+N"));
-    newAction->setIcon(QIcon(":/images/new.png"));
-    connect(newAction, SIGNAL(triggered()), this, SLOT(newFile()));
-
-    openAction = new QAction(tr("&Open File"), this);
-    openAction->setShortcut(tr("Ctrl+O"));
-    openAction->setIcon(QIcon(":/images/open.png"));
-    connect(openAction, SIGNAL(triggered()), this, SLOT(openFile()));
-
-    saveAction = new QAction(tr("&Save"), this);
-    saveAction->setShortcut(tr("Ctrl+S"));
-    saveAction->setIcon(QIcon(":/images/save.png"));
-    connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
-
-    saveAsAction = new QAction(tr("Save As"), this);
-    connect(saveAsAction, SIGNAL(triggered()), this, SLOT(saveAs()));
-
-    for (int i = 0; i < MaxRecentFiles; ++i) {
-        recentFileActions[i] = new QAction(this);
-        recentFileActions[i]->setVisible(false);
-        connect(recentFileActions[i], SIGNAL(triggered()), this, SLOT(openRecentFile()));
-    }
-
-    exitAction = new QAction(tr("E&xit"), this);
-    connect(exitAction, SIGNAL(triggered()), this, SLOT(Exit()));
-
-    copyAction = new QAction(tr("&Copy"), this);
-    copyAction->setShortcut(tr("Ctrl+C"));
-    copyAction->setIcon(QIcon(":/images/copy.png"));
-    connect(copyAction, SIGNAL(triggered()), this, SLOT(copy()));
-
-    cutAction = new QAction(tr("Cut"), this);
-    cutAction->setShortcut(tr("Ctrl+X"));
-    cutAction->setIcon(QIcon(":/images/cut.png"));
-    connect(cutAction, SIGNAL(triggered()), this, SLOT(cut()));
-
-    pasteAction = new QAction(tr("Paste"), this);
-    pasteAction->setShortcut(tr("Ctrl+V"));
-    pasteAction->setIcon(QIcon(":/images/paste.png"));
-    connect(pasteAction, SIGNAL(triggered()), this, SLOT(paste()));
-
-    undoAction = new QAction(tr("&Undo"), this);
-    undoAction->setShortcut(tr("Ctrl+U"));
-    undoAction->setIcon(QIcon(":/images/undo.png"));
-    connect(undoAction, SIGNAL(triggered()), this, SLOT(undo()));
-
-    redoAction = new QAction(tr("&Redo"), this);
-    redoAction->setShortcut(tr("Ctrl+R"));
-    redoAction->setIcon(QIcon(":/images/redo.png"));
-    connect(redoAction, SIGNAL(triggered()), this, SLOT(redo()));
-
-    prefAction = new QAction(tr("Preferences"), this);
-    connect(prefAction, SIGNAL(triggered()), this, SLOT(pref()));
-
-    findAction = new QAction(tr("&Find"), this);
-    findAction->setShortcut(tr("Ctrl+F"));
-    connect(findAction, SIGNAL(triggered()), this, SLOT(find()));
-
-    findAndReplaceAction = new QAction(tr("Find And Replace"), this);
-    connect(findAndReplaceAction, SIGNAL(triggered()), this, SLOT(findAndReplace()));
-
-    runAction = new QAction(tr("Run Simulation"));
-    runAction->setShortcut(tr("F5"));
-    runAction->setIcon(QIcon(":/images/run.png"));
-    connect(runAction, SIGNAL(triggered()), this, SLOT(run()));
-
-    pauseAction = new QAction(tr("Pause Simulation"), this);
-    pauseAction->setIcon(QIcon(":/images/pause.png"));
-    connect(pauseAction, SIGNAL(triggered()), this, SLOT(pause()));
-
-    stepIntoAction = new QAction(tr("Step In"), this);
-    stepIntoAction->setShortcut(tr("F6"));
-    stepIntoAction->setIcon(QIcon(":/images/stepInto.png"));
-    connect(stepIntoAction, SIGNAL(triggered()), this, SLOT(stepInto()));
-
-    stepOutAction = new QAction(tr("Step Out"), this);
-    stepOutAction->setShortcut(tr("F7"));
-    stepOutAction->setIcon(QIcon(":/images/stepOut.png"));
-    connect(stepOutAction, SIGNAL(triggered()), this, SLOT(stepOut()));
-
-    continueAction = new QAction(tr("Continue Simulation"), this);
-    continueAction->setIcon(QIcon(":/images/continue.png"));
-    connect(continueAction, SIGNAL(triggered()), this, SLOT(Continue()));
-
-    killAction = new QAction(tr("Kill Simulation"), this);
-    killAction->setIcon(QIcon(":/images/kill.png"));
-    connect(killAction, SIGNAL(triggered()), this, SLOT(kill()));
-
-    aboutAction = new QAction(tr("About"), this);
-    connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
-
-}
 
 void MainWindow::createMenus() {
     fileMenu = menuBar()->addMenu(tr("&File"));
@@ -199,21 +122,52 @@ void MainWindow::createToolBars() {
 }
 
 void MainWindow::openFile() {
-    QString filename = QFileDialog::getOpenFileName(this, "Open File");
-    QFile file(filename);
-    if (filename=="") return;
-    if(!file.open(QIODevice::ReadOnly | QFile::Text)) {
-        QMessageBox::warning(this, "Error", "Cannot open the file.\n"+file.errorString());
-        return;
-    }
-    QTextStream input(&file);
-    editorWidget->codeEditor->clear();
-    editorWidget->codeEditor->insertPlainText(input.readAll());
+    if(!okToContinue()) return;
+
+    QString filename = QFileDialog::getOpenFileName(this,
+            tr("Open File"), ".",
+            tr("ASM Files (*.asm)\n"
+                "Text Files (*.txt)"));
+    if (!filename.isEmpty()) loadFile(filename);
 }
 
-void MainWindow::newFile() {}
-void MainWindow::save() {}
-void MainWindow::saveAs() {}
+void MainWindow::createStatusBar() {
+    fileStatusLabel = new QLabel("File Status : " + getFileStatus());
+
+    cursorLabel = new QLabel();
+    cursorLabel->setAlignment(Qt::AlignRight);
+    cursorLabel->setMinimumSize(cursorLabel->sizeHint());
+
+    statusBar()->addWidget(fileStatusLabel);
+    statusBar()->addWidget(cursorLabel, 1);
+}
+
+void MainWindow::updateStatusBar() {
+    fileStatusLabel->setText("File Status : " + getFileStatus());
+    cursorLabel->setText(QString::number(editorWidget->codeEditor->textCursor().positionInBlock())
+            + " / " + QString::number(editorWidget->codeEditor->getLineNumber()));
+}
+
+void MainWindow::newFile() {
+    if(okToContinue()) {
+        editorWidget->codeEditor->clear();
+        tabWidget->setCurrentIndex(0);
+        setCurrentFileName("");
+    }
+}
+bool MainWindow::save() {
+    if(currentFileName.isEmpty())
+        return saveAs();
+    else
+        return saveFile(currentFileName);
+}
+bool MainWindow::saveAs() {
+    QString fileName = QFileDialog::getSaveFileName(this,
+            tr("Save ASM File"), ".",
+            tr("ASM File (*.asm)"));
+    if (fileName.isEmpty()) return false;
+    return saveFile(fileName+".asm");
+}
 void MainWindow::openRecentFile() {}
 void MainWindow::Exit() {}
 
@@ -232,7 +186,68 @@ void MainWindow::run() {tabWidget->setCurrentIndex(1);}
 void MainWindow::kill() {}
 void MainWindow::pause() {}
 void MainWindow::Continue() {}
-void MainWindow::updateStatusBar() {}
 
 void MainWindow::about() {}
+QString MainWindow::getFileStatus() {return "";}
 
+bool MainWindow::okToContinue() {
+    if (isWindowModified()) {
+        int r = QMessageBox::warning(this, tr("Elegant86"),
+                tr("The source file has been modified.\n"
+                    "Do you want to save your changes?"),
+                QMessageBox::Yes | QMessageBox::Default,
+                QMessageBox::No,
+                QMessageBox::Cancel | QMessageBox::Escape);
+        if (r == QMessageBox::Yes) {
+            return save();
+        } else if (r == QMessageBox::Cancel) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool MainWindow::loadFile(const QString &fileName) {
+    QFile file(fileName);
+    if(!file.open(QIODevice::ReadOnly | QFile::Text)) {
+        QMessageBox::warning(this, "Error", "Cannot open the file.\n"+file.errorString());
+        return false;
+    }
+    QTextStream input(&file);
+    editorWidget->codeEditor->clear();
+    editorWidget->codeEditor->insertPlainText(input.readAll());
+    setCurrentFileName(fileName);
+    return true;
+}
+
+bool MainWindow::saveFile (const QString& fileName) {
+    QSaveFile fileToSave(fileName);
+    if(fileToSave.open(QFile::WriteOnly | QFile::Text)) {
+        QTextStream out(&fileToSave);
+        out << editorWidget->codeEditor->toPlainText();
+        if(!fileToSave.commit()) {
+            statusBar()->showMessage("Failed to save your file", 2000);
+            return false;
+        }
+        else {
+            editorWidget->codeEditor->document()->setModified(false);
+            setCurrentFileName(fileName);
+            fileStatus = FileStatus::Saved;
+            return true;
+        }
+    }
+    statusBar()->showMessage("Failed to save your file", 2000);
+    return false;
+}
+
+void MainWindow::setCurrentFileName(const QString& fileName) {
+    currentFileName = fileName;
+    editorWidget->codeEditor->document()->setModified(false);
+
+    if(fileName.isEmpty())
+        shownFileName = "untitled.asm";
+    else
+        shownFileName = QFileInfo(fileName).fileName();
+
+    setWindowTitle(tr("%1[*] - %2").arg(shownFileName, QCoreApplication::applicationName()));
+}

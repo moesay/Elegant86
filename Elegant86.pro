@@ -31,5 +31,6 @@ SOURCES += main.cpp \
            codeEditor/linenumber.cpp \
            parser/parser.cpp \
            Editor.cpp \
-           Simulate.cpp
+           Simulate.cpp \
+           actions.cpp
 

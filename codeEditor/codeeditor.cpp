@@ -76,3 +76,20 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         ++blockNumber;
     }
 }
+
+int CodeEditor::getLineNumber() {
+    QTextCursor cursor = this->textCursor();
+    cursor.movePosition(QTextCursor::StartOfLine);
+    int lines = 1;
+    while (cursor.positionInBlock() > 0) {
+        cursor.movePosition(QTextCursor::Up);
+        ++lines;
+    }
+
+    QTextBlock block = cursor.block().previous();
+    while(block.isValid()) {
+        lines+=block.lineCount();
+        block = block.previous();
+    }
+    return lines;
+}

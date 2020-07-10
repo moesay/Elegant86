@@ -5,40 +5,13 @@
 
 MainWindow::MainWindow()
 {
-    setWindowTitle(tr("Elegant86[*]"));
-    createActions();
-    createMenus();
-    createToolBars();
-    createStatusBar();
-    this->showMaximized();
+    initUi();
 
-    tabWidget = new QTabWidget;
-    editorWidget = new Editor(this);
-    simulateWidget = new Simulate(this);
-    tabWidget->addTab(editorWidget, tr("Code Editor"));
-    tabWidget->addTab(simulateWidget, tr("Simulator"));
-
-    setCentralWidget(tabWidget);
-
+    tabWidget->setCurrentIndex(1);
     /* Instruction *t = new Mov("mov ds, ax"); //the immediate values processing */
     /* qDebug() << t->process(); */
     /* exit(1); */
 
-    connect(editorWidget->codeEditor, SIGNAL(cursorPositionChanged()), this, SLOT(updateStatusBar()));
-
-    connect(editorWidget->codeEditor->document(), &QTextDocument::modificationChanged,
-            this, &QWidget::setWindowModified);
-    connect(editorWidget->codeEditor->document(), &QTextDocument::modificationChanged,
-            saveAction, &QAction::setEnabled);
-    connect(editorWidget->codeEditor->document(), &QTextDocument::undoAvailable,
-            undoAction, &QAction::setEnabled);
-    connect(editorWidget->codeEditor->document(), &QTextDocument::redoAvailable,
-            redoAction, &QAction::setEnabled);
-
-    saveAction->setEnabled(editorWidget->codeEditor->document()->isModified());
-    undoAction->setEnabled(editorWidget->codeEditor->document()->isUndoAvailable());
-    redoAction->setEnabled(editorWidget->codeEditor->document()->isRedoAvailable());
-    setWindowModified(editorWidget->codeEditor->document()->isModified());
 
     std::vector<QString> code {
         "mov ax, bx",
@@ -67,43 +40,47 @@ MainWindow::MainWindow()
     delete i;
 }
 
-MainWindow::~MainWindow()
-{
+void MainWindow::initUi() {
+    setWindowTitle(tr("Elegant86[*]"));
+    createActions();
+    createMenus();
+    createToolBars();
+    createStatusBar();
+
+    tabWidget = new QTabWidget;
+    editorWidget = new Editor(this);
+    simulateWidget = new Simulate(this);
+    tabWidget->addTab(editorWidget, tr("Code Editor"));
+    tabWidget->addTab(simulateWidget, tr("Simulator"));
+    setCentralWidget(tabWidget);
+    /* setFileStatus(FileStatus::NewFile); */
+
+    connect(editorWidget->codeEditor, SIGNAL(cursorPositionChanged()), this, SLOT(updateStatusBar()));
+
+    connect(editorWidget->codeEditor->document(), &QTextDocument::modificationChanged,
+            this, &QWidget::setWindowModified);
+    connect(editorWidget->codeEditor->document(), &QTextDocument::modificationChanged,
+            saveAction, &QAction::setEnabled);
+    connect(editorWidget->codeEditor->document(), &QTextDocument::undoAvailable,
+            undoAction, &QAction::setEnabled);
+    connect(editorWidget->codeEditor->document(), &QTextDocument::redoAvailable,
+            redoAction, &QAction::setEnabled);
+    connect(editorWidget->codeEditor->document(), &QTextDocument::modificationChanged,
+            this, [this] { setFileStatus(FileStatus::Modified); });
+
+
+    saveAction->setEnabled(editorWidget->codeEditor->document()->isModified());
+    undoAction->setEnabled(editorWidget->codeEditor->document()->isUndoAvailable());
+    redoAction->setEnabled(editorWidget->codeEditor->document()->isRedoAvailable());
+    setWindowModified(editorWidget->codeEditor->document()->isModified());
+    cursorLabel->setText(tr("Line %1 / %2     Column %3").arg(
+                QString::number(editorWidget->codeEditor->getLineNumber()),
+                QString::number(editorWidget->codeEditor->document()->blockCount()),
+                QString::number(editorWidget->codeEditor->textCursor().positionInBlock())));
 }
 
-
-void MainWindow::createMenus() {
-    fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(newAction);
-    fileMenu->addAction(openAction);
-    separatorAction = fileMenu->addSeparator();
-    for(auto act : recentFileActions)
-        fileMenu->addAction(act);
-    fileMenu->addSeparator();
-    fileMenu->addAction(saveAction);
-    fileMenu->addAction(saveAsAction);
-    fileMenu->addAction(exitAction);
-
-    editMenu = menuBar()->addMenu(tr("&Edit"));
-    editMenu->addAction(copyAction);
-    editMenu->addAction(cutAction);
-    editMenu->addAction(pasteAction);
-    editMenu->addAction(undoAction);
-    editMenu->addAction(redoAction);
-    editMenu->addAction(prefAction);
-    editMenu->addAction(findAction);
-    editMenu->addAction(findAndReplaceAction);
-
-    SimulateMenu = menuBar()->addMenu(tr("&Simulate"));
-    SimulateMenu->addAction(runAction);
-    SimulateMenu->addAction(pauseAction);
-    SimulateMenu->addAction(continueAction);
-    SimulateMenu->addAction(stepIntoAction);
-    SimulateMenu->addAction(stepOutAction);
-    SimulateMenu->addAction(killAction);
-
-    helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(aboutAction);
+MainWindow::~MainWindow()
+{
 }
 
 void MainWindow::createToolBars() {
@@ -132,7 +109,8 @@ void MainWindow::openFile() {
 }
 
 void MainWindow::createStatusBar() {
-    fileStatusLabel = new QLabel("File Status : " + getFileStatus());
+    fileStatusLabel = new QLabel();
+    setFileStatus(FileStatus::NewFile);
 
     cursorLabel = new QLabel();
     cursorLabel->setAlignment(Qt::AlignRight);
@@ -143,16 +121,20 @@ void MainWindow::createStatusBar() {
 }
 
 void MainWindow::updateStatusBar() {
-    fileStatusLabel->setText("File Status : " + getFileStatus());
-    cursorLabel->setText(QString::number(editorWidget->codeEditor->textCursor().positionInBlock())
-            + " / " + QString::number(editorWidget->codeEditor->getLineNumber()));
+    setFileStatus(fileStatus);
+    cursorLabel->setText(tr("Line %1 / %2     Column %3").arg(
+                QString::number(editorWidget->codeEditor->getLineNumber()),
+                QString::number(editorWidget->codeEditor->document()->blockCount()),
+                QString::number(editorWidget->codeEditor->textCursor().positionInBlock())));
 }
 
 void MainWindow::newFile() {
     if(okToContinue()) {
         editorWidget->codeEditor->clear();
         tabWidget->setCurrentIndex(0);
+        setWindowModified(false);
         setCurrentFileName("");
+        setFileStatus(FileStatus::NewFile);
     }
 }
 bool MainWindow::save() {
@@ -162,11 +144,15 @@ bool MainWindow::save() {
         return saveFile(currentFileName);
 }
 bool MainWindow::saveAs() {
-    QString fileName = QFileDialog::getSaveFileName(this,
-            tr("Save ASM File"), ".",
-            tr("ASM File (*.asm)"));
+    QFileDialog dialog(this, tr("Save As ..."));
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setNameFilter(tr("Assembly Files (*.asm)\n"
+                "Text Files (*.txt)"));
+    dialog.setDefaultSuffix("asm");
+    if(dialog.exec() != QDialog::Accepted) return false;
+    QString fileName = dialog.selectedFiles().first();
     if (fileName.isEmpty()) return false;
-    return saveFile(fileName+".asm");
+    return saveFile(fileName);
 }
 void MainWindow::openRecentFile() {}
 void MainWindow::Exit() {}
@@ -188,7 +174,6 @@ void MainWindow::pause() {}
 void MainWindow::Continue() {}
 
 void MainWindow::about() {}
-QString MainWindow::getFileStatus() {return "";}
 
 bool MainWindow::okToContinue() {
     if (isWindowModified()) {
@@ -217,6 +202,7 @@ bool MainWindow::loadFile(const QString &fileName) {
     editorWidget->codeEditor->clear();
     editorWidget->codeEditor->insertPlainText(input.readAll());
     setCurrentFileName(fileName);
+    setFileStatus(FileStatus::NewFile);
     return true;
 }
 
@@ -231,8 +217,9 @@ bool MainWindow::saveFile (const QString& fileName) {
         }
         else {
             editorWidget->codeEditor->document()->setModified(false);
+            saveAction->setEnabled(false);
             setCurrentFileName(fileName);
-            fileStatus = FileStatus::Saved;
+            setFileStatus(FileStatus::Saved);
             return true;
         }
     }
@@ -250,4 +237,23 @@ void MainWindow::setCurrentFileName(const QString& fileName) {
         shownFileName = QFileInfo(fileName).fileName();
 
     setWindowTitle(tr("%1[*] - %2").arg(shownFileName, QCoreApplication::applicationName()));
+}
+
+std::tuple <QString, QString> MainWindow::getFileStatus(const FileStatus& status){
+    switch(status) {
+        case NewFile:
+            return {"New File", "black"}; break;
+        case Modified:
+            return {"Modified", "red"}; break;
+        case Saved:
+            return {"Saved", "green"}; break;
+        default : return {"Unknown", "red"};
+    }
+}
+
+void MainWindow::setFileStatus(const FileStatus& status) {
+    this->fileStatus = status;
+    auto [str, color] = getFileStatus(status);
+    fileStatusLabel->setText("File Status : "+str);
+    fileStatusLabel->setStyleSheet("QLabel { color : "+color+"; }");
 }

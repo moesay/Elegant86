@@ -13,7 +13,13 @@ public:
     explicit MainWindow();
     ~MainWindow();
 
+    enum FileStatus {Modified, Saved, NewFile};
+    FileStatus fileStatus = FileStatus::NewFile;
+    std::tuple<QString, QString> getFileStatus(const FileStatus&);
+
 private slots:
+    void setFileStatus(const FileStatus&);
+
     void newFile();
     void openFile();
     bool save();
@@ -43,7 +49,7 @@ private:
     QTabWidget *tabWidget;
     Editor *editorWidget;
     Simulate *simulateWidget;
-    int fileStatus = -1;
+    void initUi();
     void createActions();
     void createMenus();
     void createContextMenu();
@@ -55,7 +61,6 @@ private:
     bool saveFile(const QString& fileName);
     void updateCurrentFileActions();
     /* QString strippedName (const QString& fullFileName); */
-    QString getFileStatus();
     bool okToContinue();
     void setCurrentFileName(const QString&);
 
@@ -64,7 +69,6 @@ private:
     QString currentFileName;
 
     enum {MaxRecentFiles = 5};
-    enum FileStatus {Modified, Saved, NewFile};
     enum Mode {Editing, Simulation, Debuging};
 
     //file

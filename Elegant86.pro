@@ -23,7 +23,8 @@ HEADERS += mainwindow.h \
            codeEditor/linenumber.h \
            parser/parser.h \
            Editor.h \
-           Simulate.h
+           Simulate.h \
+           console.h
 SOURCES += main.cpp \
            mainwindow.cpp \
            codeEditor/codeeditor.cpp \
@@ -32,5 +33,6 @@ SOURCES += main.cpp \
            parser/parser.cpp \
            Editor.cpp \
            Simulate.cpp \
-           actions.cpp
-
+           actions.cpp \
+           console.cpp \
+           regsView.cpp

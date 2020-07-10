@@ -1,5 +1,40 @@
 #include "mainwindow.h"
 
+
+void MainWindow::createMenus() {
+    fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(newAction);
+    fileMenu->addAction(openAction);
+    separatorAction = fileMenu->addSeparator();
+    for(auto act : recentFileActions)
+        fileMenu->addAction(act);
+    fileMenu->addSeparator();
+    fileMenu->addAction(saveAction);
+    fileMenu->addAction(saveAsAction);
+    fileMenu->addAction(exitAction);
+
+    editMenu = menuBar()->addMenu(tr("&Edit"));
+    editMenu->addAction(copyAction);
+    editMenu->addAction(cutAction);
+    editMenu->addAction(pasteAction);
+    editMenu->addAction(undoAction);
+    editMenu->addAction(redoAction);
+    editMenu->addAction(prefAction);
+    editMenu->addAction(findAction);
+    editMenu->addAction(findAndReplaceAction);
+
+    SimulateMenu = menuBar()->addMenu(tr("&Simulate"));
+    SimulateMenu->addAction(runAction);
+    SimulateMenu->addAction(pauseAction);
+    SimulateMenu->addAction(continueAction);
+    SimulateMenu->addAction(stepIntoAction);
+    SimulateMenu->addAction(stepOutAction);
+    SimulateMenu->addAction(killAction);
+
+    helpMenu = menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction(aboutAction);
+}
+
 void MainWindow::createActions() {
     newAction = new QAction(tr("&New File"), this);
     newAction->setShortcut(tr("Ctrl+N"));

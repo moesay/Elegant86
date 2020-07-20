@@ -4,21 +4,19 @@
 #include <QtWidgets>
 #include <QAbstractScrollArea>
 #include "console.h"
-
-class BaseConverter : public QWidget {};
-class Stack : public QWidget {};
-class Memory : public QWidget {};
-class Variables : public QWidget{};
-class Ports : public QWidget {};
-
+#include "stack.h"
+#include "utils.h"
+#include "ports.h"
+#include "variables.h"
 
 class Simulate : public QWidget {
     Q_OBJECT
     public:
         explicit Simulate(QWidget *parent = nullptr);
-        void setupUi();
+        void insertLog(const QString&);
 
     private:
+        ~Simulate();
         struct code {
             QString code;
             QString hexCode;
@@ -27,9 +25,6 @@ class Simulate : public QWidget {
         enum {AX, BX, CX, DX, AH, AL, BH, BL, CH, CL, DH, DL,
             SP, BP, SI, DI, IP, ES, CS, SS, DS};
         enum {S, Z, AC, P, CY, O, D, I, T};
-        const QSize consoleSize = QSize(
-                fontMetrics().horizontalAdvance(QLatin1Char('0')) * 90,
-                fontMetrics().horizontalAdvance(QLatin1Char('0')) * 59);
 
         Console *console;
         QTabWidget *utilsTabWidget;
@@ -42,17 +37,22 @@ class Simulate : public QWidget {
         QHBoxLayout *bottomFlagRegsLayout;
         QVBoxLayout *flagRegsLayout;
         QVBoxLayout *regsLayout;
-        QVBoxLayout *consoleLayout;
         QHBoxLayout *topMainLayout;
         QHBoxLayout *bottomMainLayout;
         QVBoxLayout *mainLayout;
         QSplitter *codeViewSP;
+        QSplitter *consoleSP;
         QSplitter *regCodeSP;
         QSplitter *topBottomSP;
         QSplitter *utilsSP;
         QListWidget *log;
         QWidget *topWidget, *bottomWidget;
 
+        void setupUi();
+        Ports *prt;
+        Stack *stk;
+        Variables *vrb;
+        Utils *utl;
         void addRoot(const QString&, const QString& = "", const QString& = "");
         void updateRegView(const int&, const QString&);
         QLabel *flagRegs[9];

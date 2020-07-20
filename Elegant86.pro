@@ -3,7 +3,7 @@
 ######################################################################
 
 QMAKE_CXXFLAGS += -std=c++17 -g
-QT += widgets core
+QT += widgets core script
 TEMPLATE = app
 TARGET = Elegant86
 INCLUDEPATH += .
@@ -21,18 +21,32 @@ HEADERS += mainwindow.h \
            codeEditor/codeeditor.h \
            codeEditor/highliter.h \
            codeEditor/linenumber.h \
-           parser/parser.h \
+           assembler/base.h \
+           assembler/precom.h \
+           assembler/mov.h \
            Editor.h \
            Simulate.h \
-           console.h
+           console.h \
+           utils.h \
+           variables.h \
+           ports.h \
+           stack.h \
+           assembler/fpasm/fpasm.h
+
 SOURCES += main.cpp \
            mainwindow.cpp \
            codeEditor/codeeditor.cpp \
            codeEditor/highliter.cpp \
            codeEditor/linenumber.cpp \
-           parser/parser.cpp \
+           assembler/base.cpp \
+           assembler/mov.cpp \
            Editor.cpp \
            Simulate.cpp \
            actions.cpp \
            console.cpp \
-           regsView.cpp
+           regsView.cpp \
+           utils.cpp \
+           variables.cpp \
+           ports.cpp \
+           stack.cpp \
+           assembler/fpasm/fpasm.cpp

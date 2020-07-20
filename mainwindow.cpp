@@ -1,6 +1,7 @@
 #include "mainwindow.h"
-#include "parser/parser.h"
+#include "assembler/precom.h"
 #include <QDebug>
+#include <QScriptEngine>
 #include <QCoreApplication>
 
 MainWindow::MainWindow()
@@ -8,36 +9,53 @@ MainWindow::MainWindow()
     initUi();
 
     tabWidget->setCurrentIndex(1);
-    /* Instruction *t = new Mov("mov ds, ax"); //the immediate values processing */
-    /* qDebug() << t->process(); */
-    /* exit(1); */
 
-
-    std::vector<QString> code {
-        "mov ax, bx",
-            "mov cx, [bx+66]",
-            "mov cx, dx",
-            "mov dh, [d]",
-            "mov [di+bp], ax",
-            "mov [77+di+bx], dx",
-            "mov [bx+si], cx",
-            "mov dh, dl",
-            "mov ax, [bx]",
-            "mov cx, ax",
-            "mov ax, ds",
-            "mov si, ax",
-            "mov ds, ax",
-            "mov ax, 10"
+    QStringList code {
+        /* "mov ax, dd11", */
+        /* "idiv bh", "idiv bx", "add ax, ch","inc ax", */
+        /* "aa:", */
+        "jmp aa",
+            /* "mov ax, [bx+di]", */
+            /* "mov ax, [bx-di]", */
+            /* "mov ax, [bx-10]", */
+            /* "mov ax, [bx+10]", */
+            /* "mov cx, [bx+66]", */
+            /* ";comment", */
+            /* "mov cx, dx", */
+            /* "mov dh, [d]", */
+            /* "mov [di+bp], ax", */
+            /* "mov [77+di+bx], dx", */
+            /* "mov ax, 1d", */
+            /* "mov ah, -1d", */
+            /* "mov [bx+si], cx", */
+            /* "mov dh, dl", */
+            /* "mov ax, [bx]", */
+            /* "lbl:", */
+            /* "mov cx, ax", */
+            /* "lbl2:;comment", */
+            /* "stc", "add ax, bx", */
+            /* "mov ax, ds", */
+            /* "mov si, ax", */
+            /* "mov ds, ax", */
+            /* "mov ax, 10" */
     };
 
-    Instruction *i;
-    i = new Mov();
-    for(auto line: code) {
-        i->setCodeLine(line);
-        qDebug() << line << i->process();
+    FirstPass p;
+    QList<error> err = p.validate(code);
+    for(auto &err_ : err) {
+        auto [errmsg, inst, line] = err_;
+        qDebug() << errmsg << inst << line;
     }
 
-    delete i;
+    /* Base *i; */
+    /* i = new Mov(); */
+    /* for(auto line: code) { */
+    /*     i->setCodeLine(line); */
+    /*     qDebug() << line << i->process(); */
+    /* } */
+
+    /* delete i; */
+    exit(1);
 }
 
 void MainWindow::initUi() {

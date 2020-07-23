@@ -23,8 +23,8 @@ class Mov : public Base {
                 {"REG16-SEGREG", 0X8C}, {"MEM-SEGREG",   0X8C},
                 {"SEGREG-MEM",   0X8E}, {"SEGREG-REG16", 0X8E},
 
-                {"AL-MEM",         0XA0}, {"AX-MEM",          0XA1},
-                {"MEM-AL"/*MEM8*/, 0XA2}, {"MEM-AX"/*MEM16*/, 0XA3},
+                {"AL-MEM",         0XA0}, {"AX-MEM", 0XA1},
+                {"MEM-AL",         0XA2}, {"MEM-AX", 0XA3},  //mem8 mem16
 
                 //done
                 {"AL-IMMED8",   0XB0}, {"CL-IMMED8",     0XB1},

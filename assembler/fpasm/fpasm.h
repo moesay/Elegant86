@@ -12,13 +12,16 @@ const static std::list<line> operandsLUT {
 
     {"MOV", Reg16, Reg16}, {"MOV", Reg8, Reg8}, {"MOV", Reg16, Reg8}, {"MOV", Reg16, Immed16}, {"MOV", Reg16, Immed8},
     {"MOV", Reg8, Immed8}, {"MOV", Reg16, MemAddr}, {"MOV", Reg8, MemAddr}, {"MOV", MemAddr, Immed16}, {"MOV", MemAddr, Immed8},
-    {"MOV", MemAddr, Reg16}, {"MOV", MemAddr, Reg8},
+    {"MOV", MemAddr, Reg16}, {"MOV", MemAddr, Reg8}, {"MOV", MemAddr, SegReg}, {"MOV", SegReg, MemAddr}, {"MOV", SegReg, Reg16},
+    {"MOV", Reg16, SegReg}, /*{"MOV", Reg16, NegImmed16}, {"MOV", Reg16, NegImmed8}, {"MOV", Reg8, NegImmed8},*/
 
     {"ADD", Reg16, Reg16}, {"ADD", Reg8, Reg8}, {"ADD", Reg16, Reg8}, {"ADD", Reg16, Immed16}, {"ADD", Reg16, Immed8},
     {"ADD", Reg8, Immed8}, {"ADD", Reg16, MemAddr}, {"ADD", Reg8, MemAddr}, {"ADD", MemAddr, Reg16}, {"ADD", MemAddr, Reg8},
+    /*{"ADD", Reg16, NegImmed16}, {"ADD", Reg16, NegImmed8}, {"ADD", Reg8, NegImmed8},*/
 
     {"SUB", Reg16, Reg16}, {"SUB", Reg8, Reg8}, {"SUB", Reg16, Reg8}, {"SUB", Reg16, Immed16}, {"SUB", Reg16, Immed8},
     {"SUB", Reg8, Immed8}, {"SUB", Reg16, MemAddr}, {"SUB", Reg8, MemAddr}, {"SUB", MemAddr, Reg16}, {"SUB", MemAddr, Reg8},
+    /*{"SUB", Reg16, NegImmed16}, {"SUB", Reg16, NegImmed8}, {"SUB", Reg8, NegImmed8},*/
 
     {"PUSH", Reg16, NOP}, {"PUSH", SegReg, NOP}, {"PUSH", MemAddr, NOP},
     {"POP", Reg16, NOP}, {"POP", SegReg, NOP}, {"POP", MemAddr, NOP},
@@ -47,7 +50,8 @@ const static std::list<line> operandsLUT {
     {"SHR", Immed8, NOP}, {"SHR", Reg8, NOP},
     {"SHL", Immed8, NOP}, {"SHL", Reg8, NOP},
 
-    {"JMP", Reg16, NOP}, {"JMP", MemAddr, NOP}, {"JMP", LBL, NOP},
+    {"JMP", Reg16, NOP}, {"JMP", MemAddr, NOP}, {"JMP", Label, NOP},
+    {"CLC", NOP, NOP},
 };
 
 const static std::list<QString> instructionsLUT {
@@ -76,16 +80,13 @@ class FirstPass : public Base {
         ~FirstPass() {};
         QString process() {return "";};
         uchar getOpcode(const QString&, [[maybe_unused]] bool *ok = nullptr) {return 0x00;};
-        static FirstPass& Get();
-        template<typename T> T towsComplement(const T &param) {
-            using type = typename std::make_unsigned<T>::type;
-            return T(-uintmax_t(type(param)));
-        }
 
     /* private: */
+        QStringList readyCode;
         void Iprocess (QStringList& /*code*/, QStringList& /*variables*/, QStringList& /*labels*/);
         QList<label> getLabels(const QStringList&);
         QList<error> validate(const QStringList&);
+        void negativeSignProcess(QStringList&);
         void removeComments(QStringList&);
         QString eval(const QString&);
 };

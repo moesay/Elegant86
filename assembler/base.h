@@ -9,7 +9,6 @@
 #include <QString>
 #include <unordered_map>
 #include <sstream>
-#include <type_traits>
 
 enum HexType {
     Address, OpCode, DirectAddress
@@ -57,19 +56,21 @@ enum OperandType {
     Reg8, Reg16,
     Immed8, Immed16,
     SegReg, NegImmed8,
-    NegImmed16, Unknown,
-    LBL, NOP
+    NegImmed16, Label,
+    NOP, Char, Unknown
 };
 
 using label = std::tuple<int, QString, QString>;
 extern QList<label> lbls;
 
-const static std::array<QString, 11> Operands{"MEM", "REG8", "REG16", "IMMED8", "IMMED16", "SEGREG", "NEGIMMED8", "NEGIMMED16", "UNKNOWN", "LBL" ,"NOP"};
+const static std::array<QString, 12> Operands{
+        "MEM", "REG8", "REG16", "IMMED8", "IMMED16", "SEGREG",
+        "NEGIMMED8", "NEGIMMED16", "LABEL", "NOP", "CHAR", "UNKNOWN"};
 
 const std::unordered_map<std::string, uchar>segRegsHex { {"ES", 0x00}, {"CS", 0x01}, {"SS", 0x02}, {"DS", 0x03} };
 
 static std::unordered_map<std::string, uchar> mod00 {
-    {"BX+SI", 0x00}, {"BX+DI", 0x01}, {"BP+SI", 0x02}, {"BP+DI", 0x03},
+        {"BX+SI", 0x00}, {"BX+DI", 0x01}, {"BP+SI", 0x02}, {"BP+DI", 0x03},
         {"SI",    0x04}, {"DI",    0x05}, {"DA",    0x06}, {"BX",    0x07}};
 
 static std::unordered_map<std::string, uchar> gpRegsHex {
@@ -89,6 +90,7 @@ class Base {
     public:
         virtual QString process() = 0;
         bool isImmed8(const QString&);
+        bool isChar(const QString&);
         void hexValidator(QStringList&);
         bool isImmed16(const QString&);
         Base& get();

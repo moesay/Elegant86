@@ -12,26 +12,25 @@ bool Base::isMemAddr(const QString &param) {
 
 std::tuple<QString, QString> Base::twoTokens() {
     QStringList list = codeLine.split(QRegExp(" "), QString::SkipEmptyParts);
+    assert(list.count() >= 2);
     return {list.at(0), list.at(1)};
 }
 
-//tested
 std::tuple<QString, QString, QString> Base::threeTokens() {
     QStringList list = codeLine.split(QRegExp(" |\\,"), QString::SkipEmptyParts);
+    assert(list.count() >= 3);
     return {list[0].toUpper(), list[1].toUpper(), list[2].toUpper()};
 }
 
-//tested
 enum OperandType Base::getOperandType(const QString& operand) {
-
-    /* qDebug() << "HERE : " << std::get<1>(lbls.first()) << std::get<2>(lbls.first()); */
-    /* qDebug() << "THERE : " << operand; */
-    if(Regs8.contains(operand.trimmed().toUpper())) return OperandType::Reg8;
+    if(isChar(operand)) return OperandType::Char;
+    else if(Regs8.contains(operand.trimmed().toUpper())) return OperandType::Reg8;
     else if(Regs16.contains(operand.trimmed().toUpper())) return OperandType::Reg16;
     else if(SegRegs.contains(operand.trimmed().toUpper())) return OperandType::SegReg;
     else if(isMemAddr(operand)) return OperandType::MemAddr;
-    else if(std::find(std::begin(lbls), std::end(lbls), std::make_tuple(0, operand,
-                    const_cast<QString*>(&operand)->remove(':'))) != std::end(lbls)) return OperandType::LBL;
+    //TBF, remove the const cast and add buf variable.
+    else if(std::find(std::begin(lbls), std::end(lbls), std::make_tuple(0, operand+':',
+                    const_cast<QString*>(&operand)->remove(':'))) != std::end(lbls)) return OperandType::Label;
     else if(isImmed8(operand)) return (operand.toInt(nullptr, 16) >= 0 ? OperandType::Immed8 : OperandType::NegImmed8);
     else if(isImmed16(operand)) return (operand.toInt(nullptr, 16) >= 0? OperandType::Immed16 : OperandType::NegImmed16);
     return OperandType::Unknown;
@@ -58,6 +57,12 @@ uchar Base::rmGenerator(const QString& param) {
     }
     //on error
     return 0xff;
+}
+
+bool Base::isChar(const QString& param) {
+    return ((param.length() == 3) &&
+            (param.startsWith("'")) &&
+            (param.endsWith("'")));
 }
 
 bool Base::isImmed8(const QString& param) {
@@ -127,14 +132,21 @@ void Base::hexValidator(QStringList& param) {
 
 QString Base::signHandler(QString&& param, const OperandType& ot) {
     if(ot == OperandType::NegImmed8) {
-        uint8_t hexVal = param.toInt(nullptr, 16);
-        return QString::number(hexVal, 16).toUpper();
+        if(abs(param.toInt(nullptr, 16)) > 0xFE) {
+            uint16_t hexVal = param.toInt(nullptr, 16);
+            return QString::number(hexVal, 16).toUpper();
+        }
+        else {
+            uint8_t hexVal = param.toInt(nullptr, 16);
+            return QString::number(hexVal, 16).toUpper();
+        }
     }
     else if(ot == OperandType::NegImmed16) {
+        if(abs(param.toInt(nullptr, 16)) > 0x7FFF) return "ERROR";
         uint16_t hexVal = param.toInt(nullptr, 16);
         return QString::number(hexVal, 16).toUpper();
     }
-    return "";
+    return "ERROR";
 }
 
 Base::Base(){}

@@ -11,29 +11,30 @@ MainWindow::MainWindow()
     tabWidget->setCurrentIndex(1);
 
     QStringList code {
-        /* "mov ax, dd11", */
-        /* "idiv bh", "idiv bx", "add ax, ch","inc ax", */
-        /* "aa:", */
-        "jmp aa",
+            "mov ax, -1",
             /* "mov ax, [bx+di]", */
             /* "mov ax, [bx-di]", */
             /* "mov ax, [bx-10]", */
             /* "mov ax, [bx+10]", */
             /* "mov cx, [bx+66]", */
             /* ";comment", */
+            /* "", */
+            /* /1* "clc", *1/ */
             /* "mov cx, dx", */
             /* "mov dh, [d]", */
             /* "mov [di+bp], ax", */
             /* "mov [77+di+bx], dx", */
             /* "mov ax, 1d", */
             /* "mov ah, -1d", */
+            /* "mov bx, -ff", */
+            /* "jmp aaaa aaaa", */
             /* "mov [bx+si], cx", */
             /* "mov dh, dl", */
             /* "mov ax, [bx]", */
-            /* "lbl:", */
+            /* "lbl: ax ax", */
             /* "mov cx, ax", */
-            /* "lbl2:;comment", */
-            /* "stc", "add ax, bx", */
+            /* /1* "lbl2:;comment", *1/ */
+            /* "add ax, bx", */
             /* "mov ax, ds", */
             /* "mov si, ax", */
             /* "mov ds, ax", */
@@ -47,14 +48,15 @@ MainWindow::MainWindow()
         qDebug() << errmsg << inst << line;
     }
 
-    /* Base *i; */
-    /* i = new Mov(); */
-    /* for(auto line: code) { */
-    /*     i->setCodeLine(line); */
-    /*     qDebug() << line << i->process(); */
-    /* } */
+    Base *i;
+    i = new Mov();
+    for(auto line: p.readyCode) {
+        if(line.isEmpty()) continue;
+        i->setCodeLine(line);
+        qDebug() << line << i->process();
+    }
 
-    /* delete i; */
+    delete i;
     exit(1);
 }
 

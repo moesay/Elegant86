@@ -2,6 +2,7 @@
 #include "mov.h"
 
 QString Mov::process() {
+
     uchar modregrm;
     uchar mod = 0x00;
     QString machineCode;
@@ -11,25 +12,6 @@ QString Mov::process() {
     auto [mnemonic, firstOp, secondOp] = threeTokens();
     //get the operand type. is it a reg16, reg8, mem address, segreg or what?
     OperandType firstOpType = getOperandType(firstOp); OperandType secondOpType = getOperandType(secondOp);
-
-    //sign extending the value with Fs instead of the zeros that happens in hexToStr function
-    if(firstOpType == OperandType::NegImmed8) {
-        firstOp = signHandler(static_cast<QString>(firstOp), OperandType::NegImmed8);
-        firstOpType = OperandType::Immed8;
-    }
-    else if(firstOpType == OperandType::NegImmed16) {
-        firstOp = signHandler(static_cast<QString>(firstOp), OperandType::NegImmed16);
-        firstOpType = OperandType::Immed16;
-    }
-
-    if(secondOpType == OperandType::NegImmed8) {
-        secondOp = signHandler(static_cast<QString>(secondOp), OperandType::NegImmed8);
-        secondOpType = OperandType::Immed8;
-    }
-    else if(secondOpType == OperandType::NegImmed16) {
-        secondOp = signHandler(static_cast<QString>(secondOp), OperandType::NegImmed16);
-        secondOpType = OperandType::Immed16;
-    }
 
     //in the form of [firstOpType]-[secondOpType]
     QString generalExpression = Operands[firstOpType] + '-' + Operands[secondOpType];

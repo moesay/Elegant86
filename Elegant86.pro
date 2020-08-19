@@ -23,15 +23,16 @@ HEADERS += mainwindow.h \
            codeEditor/linenumber.h \
            assembler/base.h \
            assembler/precom.h \
+           assembler/fpasm/fpasm.h \
            assembler/mov.h \
+           assembler/add.h \
            Editor.h \
            Simulate.h \
            console.h \
            utils.h \
            variables.h \
            ports.h \
-           stack.h \
-           assembler/fpasm/fpasm.h
+           stack.h
 
 SOURCES += main.cpp \
            mainwindow.cpp \
@@ -39,7 +40,9 @@ SOURCES += main.cpp \
            codeEditor/highliter.cpp \
            codeEditor/linenumber.cpp \
            assembler/base.cpp \
+           assembler/fpasm/fpasm.cpp \
            assembler/mov.cpp \
+           assembler/add.cpp \
            Editor.cpp \
            Simulate.cpp \
            actions.cpp \
@@ -48,5 +51,4 @@ SOURCES += main.cpp \
            utils.cpp \
            variables.cpp \
            ports.cpp \
-           stack.cpp \
-           assembler/fpasm/fpasm.cpp
+           stack.cpp

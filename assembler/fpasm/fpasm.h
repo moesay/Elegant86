@@ -77,8 +77,7 @@ const static std::list<QString> instructionsLUT {
 class FirstPass : public Base {
     public:
         FirstPass() {};
-        ~FirstPass() {};
-        QString process() {return "";};
+        InstRet process() {return {"", false, ""};};
         uchar getOpcode(const QString&, [[maybe_unused]] bool *ok = nullptr) {return 0x00;};
 
     /* private: */
@@ -87,8 +86,8 @@ class FirstPass : public Base {
         QList<label> getLabels(const QStringList&);
         QList<error> validate(const QStringList&);
         void negativeSignProcess(QStringList&);
-        void removeComments(QStringList&);
-        QString eval(const QString&);
+        void removeComments(QStringList&) noexcept;
+        bool eval(QString&);
 };
 
 #endif

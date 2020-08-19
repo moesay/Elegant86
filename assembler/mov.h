@@ -5,26 +5,23 @@
 
 class Mov : public Base {
     public:
-        Mov();
-        /* using Base::Base; */
-        QString process() override;
+        InstRet process() override;
         uchar getOpcode(const QString&, bool* ok = nullptr) override;
-        ~Mov() override;
 
     private:
         std::unordered_map<std::string, uchar> LUT{
             //all the reg-reg are done
-                {"REG8-REG8",   0X88}, {"MEM-REG8",     0X88},
-                {"REG16-REG16", 0X89}, {"MEM-REG16",    0X89},
-                {"REG8-REG8",   0X8A}, {"REG8-MEM",     0X8A},
-                {"REG16-REG16", 0X8B}, {"REG16-MEM",    0X8B},
-                {"MEM-IMMED8",  0XC6}, {"MEM-IMMED16",  0XC7},
+                {"REG8-REG8",   0X88}, {"MEM8-REG8",     0X88},
+                {"REG16-REG16", 0X89}, {"MEM16-REG16",    0X89},
+                {"REG8-REG8",   0X8A}, {"REG8-MEM8",     0X8A},
+                {"REG16-REG16", 0X8B}, {"REG16-MEM16",    0X8B},
+                {"MEM8-IMMED8",  0XC6}, {"MEM16-IMMED16",  0XC7},
 
-                {"REG16-SEGREG", 0X8C}, {"MEM-SEGREG",   0X8C},
-                {"SEGREG-MEM",   0X8E}, {"SEGREG-REG16", 0X8E},
+                {"REG16-SEGREG", 0X8C}, {"MEM16-SEGREG",   0X8C},
+                {"SEGREG-MEM16",   0X8E}, {"SEGREG-REG16", 0X8E},
 
-                {"AL-MEM",         0XA0}, {"AX-MEM", 0XA1},
-                {"MEM-AL",         0XA2}, {"MEM-AX", 0XA3},  //mem8 mem16
+                {"AL-MEM8",         0XA0}, {"AX-MEM16", 0XA1},
+                {"MEM8-AL",         0XA2}, {"MEM16-AX", 0XA3},  //mem8 mem16
 
                 //done
                 {"AL-IMMED8",   0XB0}, {"CL-IMMED8",     0XB1},

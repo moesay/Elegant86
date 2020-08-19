@@ -2,8 +2,6 @@
 
 QList<label> lbls;
 
-Base::~Base(){}
-
 bool Base::isMemAddr(const QString &param) {
     if(param.startsWith('[') && param.endsWith(']'))
         return true;
@@ -16,8 +14,26 @@ std::tuple<QString, QString> Base::twoTokens() {
     return {list.at(0), list.at(1)};
 }
 
+//A seg fault when a wptr is found at the end of the line, fix it later.
 std::tuple<QString, QString, QString> Base::threeTokens() {
+    pointerType = Pointer::None;
+    codeLine.replace("WPTR", "WPTR ", Qt::CaseSensitivity::CaseInsensitive);
+    codeLine.replace("BPTR", "BPTR ", Qt::CaseSensitivity::CaseInsensitive);
     QStringList list = codeLine.split(QRegExp(" |\\,"), QString::SkipEmptyParts);
+    for(int i = 0; i < list.length(); i++) {
+        if(list[i].toUpper() == "WPTR") {
+            if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list[i+1]) == OperandType::Immed16)
+                throw "Invalid Pointer";
+            pointerType = Pointer::Word;
+            list.removeAt(i);
+        }
+        else if(list[i].toUpper() == "BPTR") {
+            if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list[i+1]) == OperandType::Immed16)
+                throw "Invalid Pointer";
+            pointerType = Pointer::Byte;
+            list.removeAt(i);
+        }
+    }
     assert(list.count() >= 3);
     return {list[0].toUpper(), list[1].toUpper(), list[2].toUpper()};
 }
@@ -39,15 +55,18 @@ enum OperandType Base::getOperandType(const QString& operand) {
 uchar Base::rmGenerator(const QString& param) {
     QString addr = param.trimmed().toUpper();
 
-    QStringList argList = addr.split(QRegExp("[+-]"), QString::SkipEmptyParts);
+    QStringList argList = addr.split(QRegExp("[+]"), QString::SkipEmptyParts);
     if(argList.size() >= 2) {
         if(argList.contains("BX") && argList.contains("SI")) return mod00["BX+SI"];
         else if(argList.contains("BX") && argList.contains("DI")) return mod00["BX+DI"];
         else if(argList.contains("BP") && argList.contains("SI")) return mod00["BP+SI"];
         else if(argList.contains("BP") && argList.contains("DI")) return mod00["BP+DI"];
-        else if(argList.contains("BX") && !argList.contains("SI") && !argList.contains("DI")) return mod00["BX"];
-        else if(argList.contains("DI") && !argList.contains("BX") && !argList.contains("BP")) return mod00["DI"];
-        else if(argList.contains("SI") && !argList.contains("BX") && !argList.contains("BP")) return mod00["SI"];
+        else if(argList.contains("BX") && std::none_of(std::begin(addressingRegs), std::end(addressingRegs),
+                    [argList](const QString& p) {return argList.contains(p) && p != "BX";})) return mod00["BX"];
+        else if(argList.contains("DI") && std::none_of(std::begin(addressingRegs), std::end(addressingRegs),
+                    [argList](const QString& p) {return argList.contains(p) && p != "DI";})) return mod00["DI"];
+        else if(argList.contains("SI") && std::none_of(std::begin(addressingRegs), std::end(addressingRegs),
+                    [argList](const QString& p) {return argList.contains(p) && p != "SI";})) return mod00["SI"];
     }
     else if(argList.size() == 1) {
         if(argList.contains("BX")) return mod00["BX"];
@@ -56,7 +75,7 @@ uchar Base::rmGenerator(const QString& param) {
         else return mod00["DA"];
     }
     //on error
-    return 0xff;
+    return 0xFF;
 }
 
 bool Base::isChar(const QString& param) {
@@ -83,9 +102,13 @@ uchar Base::modRegRmGenerator(const uchar& mod, const uchar& reg, const uchar& r
     return ((mod << 6) | (reg << 3) | (rm));
 }
 
-uchar Base::getGpRegCode(const QString& param, bool *ok) {
-    auto match = gpRegsHex.find(param.toUpper().toStdString());
-    if(match != std::end(gpRegsHex)) {
+uchar Base::getGpRegCode(const QString& param, OperandType ot, bool *ok) {
+    std::unordered_map<std::string, uchar>::iterator match;
+    if(ot == OperandType::Reg16)
+        match = Regs16Hex.find(param.toUpper().toStdString());
+    else if(ot == OperandType::Reg8)
+        match = Regs8Hex.find(param.toUpper().toStdString());
+    if(match != std::end(Regs16Hex)) {
         if(ok != nullptr) *ok = false;
         return match->second;
     }
@@ -94,7 +117,7 @@ uchar Base::getGpRegCode(const QString& param, bool *ok) {
 }
 
 QString Base::extractDisplacment(const QString& param, bool *ok) {
-    QStringList splittedAddress = param.split(QRegExp("[+-]"));
+    QStringList splittedAddress = param.split(QRegExp("[+]"));
     QStringList filteredDisplacment = splittedAddress.filter(QRegularExpression("[0-9a-fA-F]"));
 
     if(filteredDisplacment.size() > 0) {
@@ -109,7 +132,7 @@ QString Base::extractDisplacment(const QString& param, bool *ok) {
 uchar Base::getSegRegCode(const QString& param, bool *ok) {
     auto match = segRegsHex.find(param.toUpper().toStdString());
     if(match != std::end(segRegsHex)) {
-        if(ok != nullptr) *ok = false;
+        if(ok != nullptr) *ok = true;
         return match->second;
     }
     if(ok != nullptr) *ok = false;
@@ -130,23 +153,24 @@ void Base::hexValidator(QStringList& param) {
                 [this](QString const &p) {return !this->isHexValue(p);}), std::end(param));
 }
 
-QString Base::signHandler(QString&& param, const OperandType& ot) {
+QString Base::signHandler(const QString& param, const OperandType& ot) {
     if(ot == OperandType::NegImmed8) {
         if(abs(param.toInt(nullptr, 16)) > 0xFE) {
             uint16_t hexVal = param.toInt(nullptr, 16);
-            return QString::number(hexVal, 16).toUpper();
+            return hexToStr(hexVal, HexType::OpCode, Sign::Neg);
+            /* return QString::number(hexVal, 16).toUpper(); */
         }
         else {
             uint8_t hexVal = param.toInt(nullptr, 16);
-            return QString::number(hexVal, 16).toUpper();
+            return hexToStr(hexVal, HexType::OpCode, Sign::Neg);
+            /* return QString::number(hexVal, 16).toUpper(); */
         }
     }
     else if(ot == OperandType::NegImmed16) {
         if(abs(param.toInt(nullptr, 16)) > 0x7FFF) return "ERROR";
         uint16_t hexVal = param.toInt(nullptr, 16);
-        return QString::number(hexVal, 16).toUpper();
+        return hexToStr(hexVal, HexType::OpCode, Sign::Neg);
+        /* return QString::number(hexVal, 16).toUpper(); */
     }
     return "ERROR";
 }
-
-Base::Base(){}

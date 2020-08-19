@@ -6,7 +6,6 @@
 #include "mov.hpp"
 #include "add.hpp"
 
-//--
 int main(int argc, char *argv[])
 {
     testing::InitGoogleTest(&argc, argv);

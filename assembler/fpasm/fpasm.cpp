@@ -1,6 +1,10 @@
 #include "fpasm.h"
 #include <QScriptEngine>
 
+std::tuple<QStringList, QList<error>> FirstPass::validate(const QStringList& param) {
+    return {Get().Ivalidate(param)};
+}
+
 void FirstPass::removeComments(QStringList &param) noexcept {
     param.append(";"); //segfault
     param.erase(
@@ -18,27 +22,26 @@ void FirstPass::removeComments(QStringList &param) noexcept {
 }
 
 QList<label> FirstPass::getLabels(const QStringList &param) {
-    //INLINE LABELS ARE NOT SUPPORTED
+    /*
+     * @INLINE LABELS ARE NOT SUPPORTED, YET...OR NEVER!
+     * When a label is detected, it should be removed after calculating its address and every occurrence of it
+     * should be replaced by cs:[addr]
+     * TODO:
+     * Till now, the function only calculates the address. After implementing jmp instruction, the rest of the functionality will be implemented.
+     */
     QList<label> ret;
-
+    int bytesCount = 0;
     for (auto p : param) {
-        if(p.contains(":")) {
-            QString buf = p;
-            buf.remove(':');
-            if(p.endsWith(":")) ret.append(std::make_tuple(0, p, buf));
-            else {
-                //to distinguish between the : in strings
-                int mark = p.indexOf('"');
-                int mark2 = p.indexOf(":");
-                if(mark < mark2) continue;
-                else ret.append(std::make_tuple(0, p, buf));
-            }
-        }
+        auto [machCode, success, errMsg] = assemble(p);
+        bytesCount += machCode.length() / 2;
+        if(!success)
+            if(p.startsWith('.') && p.endsWith(':'))
+                ret.append(std::make_tuple(bytesCount, p));
     }
     return ret;
 }
 
-QList<error> FirstPass::validate(const QStringList& code) {
+std::tuple<QStringList, QList<error>> FirstPass::Ivalidate(const QStringList& code) {
 
     QRegExp negRegx("-[0-9a-fA-F]+");
     QRegExp charRegx("'.'|\".\"");
@@ -48,15 +51,20 @@ QList<error> FirstPass::validate(const QStringList& code) {
     readyCode = code;
     removeComments(readyCode);
     lbls = getLabels(readyCode);
+    for(auto [p1, p2] : lbls) {
+        qDebug() << p1 << p2 << "END\n";
+    }
 
-    //Rule :
-    //  1- Check that each line starts with an instruction
-    //  2- Validates the operands of each instruction
-    //  3- If there is a negative number, process it
+    /*
+     * @Rules :
+     *  1- Check that each line begins with an instruction
+     *  2- If there is a negative number, process it
+     *  3- Evaluate the addresses mathmatical operations
+     */
     for (auto &p : readyCode) {
         ++lineNumber;
         if(p.isEmpty()) continue;
-        bool isLabel = p.endsWith(':');
+        bool isLabel = p.endsWith(':') && p.startsWith('.');
 
         //Handling the negative sign by taking the tow's complement
         //to be moved to a function.
@@ -83,11 +91,6 @@ QList<error> FirstPass::validate(const QStringList& code) {
         }
 
         QStringList splittedLine = p.split(QRegExp(" |\\,"), QString::SkipEmptyParts);
-        auto cmpLine = std::make_tuple(splittedLine.at(0).toUpper(),
-                (splittedLine.count() >= 2 ? getOperandType(splittedLine.at(1)) : NOP),
-                (splittedLine.count() >= 3 ? getOperandType(splittedLine.at(2)) : NOP));
-
-        auto operandsResult = std::find(std::begin(operandsLUT), std::end(operandsLUT), cmpLine);
 
         auto instResult = std::find(std::begin(instructionsLUT),
                 std::end(instructionsLUT),splittedLine.first().toUpper());
@@ -95,15 +98,14 @@ QList<error> FirstPass::validate(const QStringList& code) {
         QList<label>::iterator lblFindResult;
 
         if((splittedLine.count() >= 2) && (getOperandType(splittedLine.at(1)) == Label)) {
-            lblFindResult = std::find(std::begin(lbls), std::end(lbls), std::make_tuple(0, splittedLine.at(1)+':', splittedLine.at(1)));
+            lblFindResult = std::find(std::begin(lbls), std::end(lbls), std::make_tuple(0, splittedLine.at(1)));
         }
 
         if(instResult == std::end(instructionsLUT) && !isLabel) {ret.append(std::make_tuple(QString("Unknown Instruction"), p, lineNumber)); continue;}
-        if(operandsResult == std::end(operandsLUT) && !isLabel) {ret.append(std::make_tuple(QString("Invalid Operands"), p, lineNumber)); continue;}
         if(lblFindResult == std::end(lbls)) {ret.append(std::make_tuple(QString("Undefined Label"), p, lineNumber)); continue;}
     }
 
-    return ret;
+    return {readyCode, ret};
 }
 
 bool FirstPass::eval(QString& param) {
@@ -145,4 +147,22 @@ bool FirstPass::eval(QString& param) {
     }
     param.append(ret);
     return true;
+}
+
+InstRet FirstPass::assemble(const QString& param) {
+    std::unique_ptr<Base> b;
+    QString inst = param.split(" ").at(0).toUpper();
+    if(inst == "MOV") {
+        b = std::make_unique<Mov>(param);
+        return b->process();
+    }
+    else if(inst == "ADD") {
+        b = std::make_unique<Add>(param);
+        return b->process();
+    }
+    else if(inst == "PUSH") {
+        b = std::make_unique<Push>(param);
+        return b->process();
+    }
+    return {"", false, "Unknown Instruction"};
 }

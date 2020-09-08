@@ -4,9 +4,17 @@ Simulate::Simulate(QWidget *parent) : QWidget(parent) {
     setupUi();
 }
 
+void Simulate::addToCodeViews(const QString& asmCode, const QString& hexCode) {
+    hexView->addItem(hexCode); codeView->addItem(asmCode);
+}
+
+void Simulate::clearLog() {
+    log->clear();
+}
+
 void Simulate::insertLog(const QString& param) {
     QString timeStr = QTime::currentTime().toString("hh:mm:ss");
-    log->addItem(timeStr+" : "+param);
+    log->addItem("["+timeStr+"] "+param);
 }
 
 void Simulate::updateFlagRegs(const int& reg, const bool& set, bool init) {
@@ -26,6 +34,7 @@ void Simulate::updateFlagRegs(const int& reg, const bool& set, bool init) {
 }
 
 void Simulate::setupUi() {
+
     topFlagRegsLayout = new QHBoxLayout;
     regsLayout = new QVBoxLayout;
     bottomFlagRegsLayout = new QHBoxLayout;
@@ -84,7 +93,26 @@ void Simulate::setupUi() {
     topBottomSP->addWidget(topWidget); topBottomSP->addWidget(bottomWidget);
     mainLayout->addWidget(topBottomSP);
     this->setLayout(mainLayout);
+
+    connect(hexView, SIGNAL(currentRowChanged(int)), this, SLOT(setCodeView(int)));
+    connect(codeView, SIGNAL(currentRowChanged(int)), this, SLOT(setHexView(int)));
 }
 
 Simulate::~Simulate() {
+}
+
+void Simulate::setHexView(int param) {
+    hexView->setCurrentRow(param);
+}
+
+void Simulate::setCodeView(int param) {
+    codeView->setCurrentRow(param);
+}
+
+void Simulate::resetUi() {
+    clearLog();
+    codeView->clear();
+    hexView->clear();
+    updateFlagRegs(0, 0, 1);
+    //clear console
 }

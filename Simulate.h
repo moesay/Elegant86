@@ -14,6 +14,9 @@ class Simulate : public QWidget {
     public:
         explicit Simulate(QWidget *parent = nullptr);
         void insertLog(const QString&);
+        void clearLog();
+        void addToCodeViews(const QString&, const QString&);
+        void resetUi();
 
     private:
         ~Simulate();
@@ -61,6 +64,9 @@ class Simulate : public QWidget {
 
 
         void initRegsView();
+        private slots:
+        void setCodeView(int);
+        void setHexView(int);
 };
 
 #endif

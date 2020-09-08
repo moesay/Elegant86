@@ -18,8 +18,8 @@ RESOURCES = ../resources.qrc
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 # Input
-HEADERS += ../mainwindow.h \
-           ../codeEditor/codeeditor.h \
+HEADERS +=  ../mainwindow.h \
+            ../codeEditor/codeeditor.h \
            ../codeEditor/highliter.h \
            ../codeEditor/linenumber.h \
            ../assembler/base.h \
@@ -33,7 +33,9 @@ HEADERS += ../mainwindow.h \
            ../ports.h \
            ../stack.h \
            ../assembler/fpasm/fpasm.h \
-           ../assembler/add.h
+           ../assembler/push.h \
+           ../assembler/add.h \
+           ../exc.h \
 
 SOURCES += main.cpp \
            ../mainwindow.cpp \
@@ -53,5 +55,7 @@ SOURCES += main.cpp \
            ../stack.cpp \
            ../assembler/fpasm/fpasm.cpp \
            ../assembler/add.cpp \
+           ../assembler/push.cpp \
+           ../exc.cpp \
            add.hpp \
            mov.hpp \

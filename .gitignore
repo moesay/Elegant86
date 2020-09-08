@@ -3,6 +3,8 @@ TODO
 *.asm
 .clangd/
 __Tagbar__.1
+obj/
+mocs/
 
 # C++ objects and libs
 *.slo

@@ -99,6 +99,9 @@ TEST_F(MovFixture, REG8_MEM8) {
     SET("mov ah, bptr [bx+si]")
         T("8A20")
 
+        SET("mov ah, [1]")
+        T("8A260100")
+
         SET("mov ah, wptr [bx+si]")
         T("")
 
@@ -124,6 +127,12 @@ TEST_F(MovFixture, REG16_MEM16) {
 
         SET("mov ax, [11]")
         T("A11100")
+
+        SET("mov bx, [2]")
+        T("8B1E0200")
+
+        SET("mov ax, [11f]")
+        T("A11F01")
 
         SET("mov ax, bptr [11]")
         T("")
@@ -191,7 +200,7 @@ TEST_F(MovFixture, MEM16_IMMED16) {
 }
 
 TEST_F(MovFixture, REG16_SEGREG) {
-        SET("mov ax, ds")
+    SET("mov ax, ds")
         T("8CD8")
 
         SET("mov ds, ax")
@@ -246,7 +255,7 @@ TEST_F(MovFixture, SEGREG_MEM16) {
         SET("mov wptr 11, ax")
         T("");
 
-        SET("mov wptr ss, [11]")
+    SET("mov wptr ss, [11]")
         T("8E161100")
 
         SET("mov ss, bptr [11]")
@@ -285,7 +294,6 @@ TEST_F(MovFixture, SEGREG_REG16) {
         T("8ED0")
 }
 
-//140
 TEST_F(MovFixture, ACCUM) {
     SET("mov al, [1]")
         T("A00100")
@@ -322,4 +330,127 @@ TEST_F(MovFixture, ACCUM) {
 
         SET("mov al, 5")
         T("B005")
+}
+
+TEST_F(MovFixture, IMMED) {
+    SET("mov al, 1")
+        T("B001")
+
+        SET("mov al, 23")
+        T("B023")
+
+        SET("mov al, 111")
+        T("")
+
+        SET("mov ah, 1")
+        T("B401")
+
+        SET("mov ah, 23")
+        T("B423")
+
+        SET("mov ah, 111")
+        T("")
+
+        SET("mov bl, 1")
+        T("B301")
+
+        SET("mov bl, 23")
+        T("B323")
+
+        SET("mov bl, 111")
+        T("")
+
+        SET("mov bh, 1")
+        T("B701")
+
+        SET("mov bh, 23")
+        T("B723")
+
+        SET("mov bh, 111")
+        T("")
+
+        SET("mov cl, 1")
+        T("B101")
+
+        SET("mov cl, 23")
+        T("B123")
+
+        SET("mov cl, 111")
+        T("")
+
+        SET("mov ch, 1")
+        T("B501")
+
+        SET("mov ch, 23")
+        T("B523")
+
+        SET("mov ch, 111")
+        T("")
+
+        SET("mov dl, 1")
+        T("B201")
+
+        SET("mov dl, 23")
+        T("B223")
+
+        SET("mov dl, 111")
+        T("")
+
+        SET("mov dh, 1")
+        T("B601")
+
+        SET("mov dh, 23")
+        T("B623")
+
+        SET("mov dh, 111")
+        T("")
+}
+
+TEST_F(MovFixture, SEGMENT_OVERRIDE) {
+    SET("mov ds:[11], ax")
+        T("3EA31100")
+
+        SET("mov cs:[bx+si+22], bx")
+        T("2E895822")
+
+        SET("mov cx, ds:[bx]")
+        T("3E8B0F")
+
+        SET("mov ch, ds:[bx]")
+        T("3E8A2F")
+
+        SET("mov wptr [bx+si+ff], ds:[11]")
+        T("")
+
+        SET("mov wptr [bx+si+ff], ds:[bx]")
+        T("")
+}
+
+TEST_F(MovFixture, INDEXERS) {
+    SET("mov ax, si")
+        T("89F0")
+
+        SET("mov si, bx")
+        T("89DE")
+
+        SET("mov si, [bx+si+22]")
+        T("8B7022")
+
+        SET("mov si, [bx+si]")
+        T("8B30")
+
+        SET("mov di, ax")
+        T("89C7")
+
+        SET("mov di, [bx]")
+        T("8B3F")
+
+        SET("mov bp, ax")
+        T("89C5")
+
+        SET("mov sp, [11]")
+        T("8B261100")
+
+        SET("mov sp, dx")
+        T("89D4")
 }

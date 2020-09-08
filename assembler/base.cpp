@@ -9,7 +9,25 @@ bool Base::isMemAddr(const QString &param) {
 }
 
 std::tuple<QString, QString> Base::twoTokens() {
+    pointerType = Pointer::None;
+    codeLine.replace("WPTR", "WPTR ", Qt::CaseSensitivity::CaseInsensitive);
+    codeLine.replace("BPTR", "BPTR ", Qt::CaseSensitivity::CaseInsensitive);
+
     QStringList list = codeLine.split(QRegExp(" "), QString::SkipEmptyParts);
+    for(int i = 0; i < list.length(); i++) {
+        if(list[i].toUpper() == "WPTR") {
+            if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list[i+1]) == OperandType::Immed16)
+                throw InvalidPointer();
+            pointerType = Pointer::Word;
+            list.removeAt(i);
+        }
+        else if(list[i].toUpper() == "BPTR") {
+            if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list[i+1]) == OperandType::Immed16)
+                throw InvalidPointer();
+            pointerType = Pointer::Byte;
+            list.removeAt(i);
+        }
+    }
     assert(list.count() >= 2);
     return {list.at(0), list.at(1)};
 }
@@ -23,13 +41,13 @@ std::tuple<QString, QString, QString> Base::threeTokens() {
     for(int i = 0; i < list.length(); i++) {
         if(list[i].toUpper() == "WPTR") {
             if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list[i+1]) == OperandType::Immed16)
-                throw "Invalid Pointer";
+                throw InvalidPointer();
             pointerType = Pointer::Word;
             list.removeAt(i);
         }
         else if(list[i].toUpper() == "BPTR") {
             if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list[i+1]) == OperandType::Immed16)
-                throw "Invalid Pointer";
+                throw InvalidPointer();
             pointerType = Pointer::Byte;
             list.removeAt(i);
         }
@@ -38,17 +56,57 @@ std::tuple<QString, QString, QString> Base::threeTokens() {
     return {list[0].toUpper(), list[1].toUpper(), list[2].toUpper()};
 }
 
+bool Base::hasSegmentPrefix(const QString& param) {
+    for(const auto &p : SegRegs) {
+        if(param.toUpper().startsWith(p+':'))
+            return true;
+    }
+    return false;
+}
+
+QString Base::getSegmentPrefix(const QString& param) {
+    return param.toUpper().split(':').at(0);
+}
+
+QString Base::stripSegmentPrefix(const QString& param) {
+    if(hasSegmentPrefix(param))
+        return param.split(':').at(1);
+    return param;
+}
+
+void Base::segmentPrefixWrapper(QString& firstOp, QString& machineCode) {
+    if(hasSegmentPrefix(firstOp)) {
+        machineCode.append(hexToStr(getSegRegPrefix(getSegmentPrefix(firstOp))));
+        firstOp = stripSegmentPrefix(firstOp);
+    }
+}
+
+void Base::segmentPrefixWrapper(QString& firstOp, QString& secondOp, QString& machineCode) {
+    if(hasSegmentPrefix(firstOp) && hasSegmentPrefix(secondOp))
+        throw InvalidSegmentOverridePrefix();
+    else if(hasSegmentPrefix(firstOp)) {
+        machineCode.append(hexToStr(getSegRegPrefix(getSegmentPrefix(firstOp))));
+        firstOp = stripSegmentPrefix(firstOp);
+    }
+    else if(hasSegmentPrefix(secondOp)) {
+        machineCode.append(hexToStr(getSegRegPrefix(getSegmentPrefix(secondOp))));
+        secondOp = stripSegmentPrefix(secondOp);
+    }
+}
+
 enum OperandType Base::getOperandType(const QString& operand) {
-    if(isChar(operand)) return OperandType::Char;
-    else if(Regs8.contains(operand.trimmed().toUpper())) return OperandType::Reg8;
-    else if(Regs16.contains(operand.trimmed().toUpper())) return OperandType::Reg16;
-    else if(SegRegs.contains(operand.trimmed().toUpper())) return OperandType::SegReg;
-    else if(isMemAddr(operand)) return OperandType::MemAddr;
+    QString strippedOperand = stripSegmentPrefix(operand);
+    if(isChar(strippedOperand)) return OperandType::Char;
+    else if(Regs8.contains(strippedOperand.trimmed().toUpper())) return OperandType::Reg8;
+    else if(Indexers.contains(strippedOperand.trimmed().toUpper())) return OperandType::Indexer;
+    else if(Regs16.contains(strippedOperand.trimmed().toUpper())) return OperandType::Reg16;
+    else if(SegRegs.contains(strippedOperand.trimmed().toUpper())) return OperandType::SegReg;
+    else if(isMemAddr(strippedOperand)) return OperandType::MemAddr;
     //TBF, remove the const cast and add buf variable.
-    else if(std::find(std::begin(lbls), std::end(lbls), std::make_tuple(0, operand+':',
-                    const_cast<QString*>(&operand)->remove(':'))) != std::end(lbls)) return OperandType::Label;
-    else if(isImmed8(operand)) return (operand.toInt(nullptr, 16) >= 0 ? OperandType::Immed8 : OperandType::NegImmed8);
-    else if(isImmed16(operand)) return (operand.toInt(nullptr, 16) >= 0? OperandType::Immed16 : OperandType::NegImmed16);
+    else if(std::find(std::begin(lbls), std::end(lbls), std::make_tuple(0,
+                    const_cast<QString*>(&strippedOperand)->remove(':'))) != std::end(lbls)) return OperandType::Label;
+    else if(isImmed8(strippedOperand)) return (strippedOperand.toInt(nullptr, 16) >= 0 ? OperandType::Immed8 : OperandType::NegImmed8);
+    else if(isImmed16(strippedOperand)) return (strippedOperand.toInt(nullptr, 16) >= 0? OperandType::Immed16 : OperandType::NegImmed16);
     return OperandType::Unknown;
 }
 
@@ -127,6 +185,16 @@ QString Base::extractDisplacment(const QString& param, bool *ok) {
     }
     if(ok != nullptr) *ok = false;
     return "";
+}
+
+uchar Base::getSegRegPrefix(const QString& param, bool *ok) {
+    auto match = segRegsPrefix.find(param.toUpper().toStdString());
+    if(match != std::end(segRegsHex)) {
+        if(ok != nullptr) *ok = true;
+        return match->second;
+    }
+    if(ok != nullptr) *ok = false;
+    return 0x00;
 }
 
 uchar Base::getSegRegCode(const QString& param, bool *ok) {

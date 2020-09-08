@@ -1,7 +1,6 @@
 #ifndef BASE_H
 #define BASE_H
 
-
 #include <QRegularExpression>
 #include <QByteArray>
 #include <QDebug>
@@ -9,6 +8,7 @@
 #include <QString>
 #include <unordered_map>
 #include <sstream>
+#include "exc.h"
 
 enum Pointer : uint8_t {
     Byte, Word, None
@@ -27,7 +27,9 @@ enum class OutputSize : uint8_t {
 };
 
 template <typename T>
-QString hexToStr (T param, HexType ht = HexType::OpCode, Sign sign = Sign::Pos, OutputSize opSize = OutputSize::Dynamic) {
+QString hexToStr (T param, HexType ht = HexType::OpCode, Sign sign = Sign::Pos, OutputSize opSize = OutputSize::Dynamic)
+    requires std::is_integral_v<T>
+{
     std::stringstream ss;
 
     if(sign == Sign::Pos) {
@@ -97,19 +99,20 @@ enum OperandType : uint8_t {
     Immed8, Immed16,
     SegReg, NegImmed8,
     NegImmed16, Label,
-    NOP, Char, Unknown
+    NOP, Char, Indexer, Unknown
 };
 
 using InstRet = std::tuple<QString, bool, QString>;
-using label = std::tuple<int, QString, QString>;
+using label = std::tuple<uint16_t, QString>;
 extern QList<label> lbls;
 
-const static std::array<QString, 14> Operands{
+const static std::array<QString, 15> Operands{
         "MEM", "MEM8", "MEM16", "REG8", "REG16", "IMMED8", "IMMED16", "SEGREG",
-        "NEGIMMED8", "NEGIMMED16", "LABEL", "NOP", "CHAR", "UNKNOWN"};
+        "NEGIMMED8", "NEGIMMED16", "LABEL", "NOP", "CHAR",  "INDEXER", "UNKNOWN"};
 
-const std::unordered_map<std::string, uchar>segRegsHex { {"ES", 0x00}, {"CS", 0x01}, {"SS", 0x02}, {"DS", 0x03} };
-
+const std::unordered_map<std::string, uchar>segRegsHex   { {"ES", 0x00}, {"CS", 0x01}, {"SS", 0x02}, {"DS", 0x03} };
+const std::unordered_map<std::string, uchar> indexersHex { {"SP", 0x04}, {"BP", 0x05}, {"SI", 0x06}, {"DI", 0x07} };
+const std::unordered_map<std::string, uchar>segRegsPrefix { {"ES", 0X26}, {"CS", 0X2E}, {"SS", 0X36}, {"DS", 0X3E} };
 static std::unordered_map<std::string, uchar> mod00 {
         {"BX+SI", 0x00}, {"BX+DI", 0x01}, {"BP+SI", 0x02}, {"BP+DI", 0x03},
         {"SI",    0x04}, {"DI",    0x05}, {"DA",    0x06}, {"BX",    0x07}};
@@ -129,6 +132,7 @@ static std::unordered_map<std::string, uchar> Regs8Hex {
 const static QVector<QString> Regs16 {"AX", "BX", "CX", "DX", "SP", "BP", "SI", "DI"};
 const static QVector<QString> Regs8  {"AH", "AL", "BH", "BL", "CH", "CL", "DH", "DL"};
 const static QVector<QString> SegRegs {"ES", "CS", "SS", "DS"};
+const static QVector<QString> Indexers {"SP", "BP", "SI", "DI"};
 const static QVector<QString> notAdressingRegs {"AX", "CX", "DX", "SP"};
 const static QVector<QString> addressingRegs {"BX", "SI", "DI", "BP"};
 
@@ -144,15 +148,21 @@ class Base {
         bool isChar(const QString&);
         void hexValidator(QStringList&);
         bool isImmed16(const QString&);
-        Base& get();
+        Base& get();                    //What is this!
         bool isHexValue(const QString&);
         QString extractDisplacment(const QString&, bool *ok = nullptr);
+        QString stripSegmentPrefix(const QString&);
+        bool hasSegmentPrefix(const QString&);
+        QString getSegmentPrefix(const QString&);
         bool isMemAddr(const QString&);
         enum OperandType getOperandType(const QString&);
+        void segmentPrefixWrapper(QString&, QString&, QString&);
+        void segmentPrefixWrapper(QString&, QString&);
         std::tuple<QString, QString> twoTokens();
         std::tuple<QString, QString, QString> threeTokens();
         const QString& getCodeLine();
         uchar getSegRegCode(const QString&, bool *ok = nullptr);
+        uchar getSegRegPrefix(const QString&, bool *ok = nullptr);
         void setCodeLine(const QString&);
         QString signHandler(const QString&, const OperandType&);
         bool registerMod(const QString&);

@@ -16,107 +16,114 @@ InstRet Add::process() {
     catch(const char* ex) {
         return {"", false, ex};
     }
-    auto [mnemonic, firstOp, secondOp] = threeTokens();
+    auto [mnemonic, dest, src] = threeTokens();
+
+    try {
+    segmentPrefixWrapper(dest, src, machineCode);
+    } catch(InvalidSegmentOverridePrefix& exc) {
+        return {"", false, exc.what()};
+    }
+
     //get the operand type. is it a reg16, reg8, mem address, segreg or what?
-    OperandType firstOpType = getOperandType(firstOp); OperandType secondOpType = getOperandType(secondOp);
+    OperandType destType = getOperandType(dest); OperandType srcType = getOperandType(src);
 
     //A generic memory type is assigned to all memory addresses. in this section, based on the
     //other operand, the memory type is gonna be assigned
-    if(firstOpType == OperandType::MemAddr) {
+    if(destType == OperandType::MemAddr) {
         if(pointerType != Pointer::None)
-            pointerType == Pointer::Byte ? firstOpType = OperandType::Mem8 : firstOpType = OperandType::Mem16;
+            pointerType == Pointer::Byte ? destType = OperandType::Mem8 : destType = OperandType::Mem16;
         else {
-            if(secondOpType == OperandType::Reg16)
-                firstOpType = OperandType::Mem16;
-            else if(secondOpType == OperandType::Reg8)
-                firstOpType = OperandType::Mem8;
+            if(srcType == OperandType::Reg16)
+                destType = OperandType::Mem16;
+            else if(srcType == OperandType::Reg8)
+                destType = OperandType::Mem8;
             else
                 return {"", false, "Unknown pointer size"};
         }
     }
-    else if(secondOpType == OperandType::MemAddr) {
+    else if(srcType == OperandType::MemAddr) {
         if(pointerType != Pointer::None)
-            pointerType == Pointer::Byte ? secondOpType = OperandType::Mem8 : secondOpType = OperandType::Mem16;
+            pointerType == Pointer::Byte ? srcType = OperandType::Mem8 : srcType = OperandType::Mem16;
         else {
-            if(firstOpType == OperandType::Reg16)
-                secondOpType = OperandType::Mem16;
-            else if(firstOpType == OperandType::Reg8)
-                secondOpType = OperandType::Mem8;
+            if(destType == OperandType::Reg16)
+                srcType = OperandType::Mem16;
+            else if(destType == OperandType::Reg8)
+                srcType = OperandType::Mem8;
             else
                 return {"", false, "Unknown pointer size"};
         }
     }
 
-    if(firstOpType == OperandType::Mem16 && secondOpType == OperandType::Immed8)
-        secondOpType = Immed16;
-    else if(secondOpType == OperandType::Mem16 && firstOpType == OperandType::Immed8)
-        firstOpType = Immed16;
+    if(destType == OperandType::Mem16 && srcType == OperandType::Immed8)
+        srcType = Immed16;
+    else if(srcType == OperandType::Mem16 && destType == OperandType::Immed8)
+        destType = Immed16;
 
-    //in the form of [firstOpType]-[secondOpType]
-    QString generalExpression = Operands[firstOpType] + '-' + Operands[secondOpType];
+    //in the form of [destType]-[srcType]
+    QString generalExpression = Operands[destType] + '-' + Operands[srcType];
 
     //if both the operands are of the same size
-    if(((firstOpType==OperandType::Reg16) && (secondOpType==OperandType::Reg16)) ||
-            ((firstOpType==OperandType::Reg8) && (secondOpType==OperandType::Reg8))) {
+    if(((destType==OperandType::Reg16) && (srcType==OperandType::Reg16)) ||
+            ((destType==OperandType::Reg8) && (srcType==OperandType::Reg8))) {
         //the mod is indeed 3, and the machine code is 2 bytes
         //the opcode, and the modregrm byte
         opcode = getOpcode(generalExpression, &state);
         if(state == false) return {"", false, "Invalid Operands"};
         machineCode.append(hexToStr(opcode));
-        machineCode.append(hexToStr(modRegRmGenerator(0x3, getGpRegCode(secondOp, secondOpType), getGpRegCode(firstOp, firstOpType))));
+        machineCode.append(hexToStr(modRegRmGenerator(0x3, getGpRegCode(src, srcType), getGpRegCode(dest, destType))));
         return {machineCode, true, ""};
     }
 
-    else if(firstOpType==OperandType::Reg8 && secondOpType==OperandType::Immed8) {
-        if(firstOp == "AL") {
-            opcode = getOpcode(firstOp+"-IMMED8", &state);
+    else if(destType==OperandType::Reg8 && srcType==OperandType::Immed8) {
+        if(dest == "AL") {
+            opcode = getOpcode(dest+"-IMMED8", &state);
             if(state == false) return {"", false, "Invalid Operands"};
             machineCode.append(hexToStr(opcode));
-            machineCode.append(hexToStr(secondOp.toInt(nullptr, 16)));
+            machineCode.append(hexToStr(src.toInt(nullptr, 16)));
             return {machineCode, true, ""};
         }
 
         opcode = getOpcode(generalExpression, &state);
         if(state == false) return {"", false, "Invalid Operands"};
         reg = 0X00;
-        modregrm = modRegRmGenerator(0X3, reg, getGpRegCode(firstOp, firstOpType));
+        modregrm = modRegRmGenerator(0X3, reg, getGpRegCode(dest, destType));
         machineCode.append(hexToStr(opcode));
         machineCode.append(hexToStr(modregrm));
-        machineCode.append(hexToStr(secondOp.toInt(nullptr, 16)));
+        machineCode.append(hexToStr(src.toInt(nullptr, 16)));
         return {machineCode, true, ""};
     }
 
-    else if(firstOpType==OperandType::Reg16 && (secondOpType==OperandType::Immed16 || secondOpType==Immed8)){
-        if(firstOp == "AX") {
-            opcode = getOpcode(firstOp+"-IMMED16", &state);
+    else if(destType==OperandType::Reg16 && (srcType==OperandType::Immed16 || srcType==Immed8)){
+        if(dest == "AX") {
+            opcode = getOpcode(dest+"-IMMED16", &state);
             if(state == false) return {"", false, "Invalid Operands"};
             machineCode.append(hexToStr(opcode));
-            machineCode.append(hexToStr(secondOp.toInt(nullptr, 16), HexType::DirectAddress));
+            machineCode.append(hexToStr(src.toInt(nullptr, 16), HexType::DirectAddress));
             return {machineCode, true, ""};
         }
-        opcode = getOpcode(Operands[firstOpType]+"-IMMED16" , &state);
+        opcode = getOpcode(Operands[destType]+"-IMMED16" , &state);
         if(state == false) return {"", false, "Invalid Operands"};
         reg = 0X00;
         machineCode.append(hexToStr(opcode)); //the instruction machine code, in the case its mov XX, XX is any 8 bit reg
-        modregrm = modRegRmGenerator(0X3, reg, getGpRegCode(firstOp, firstOpType));
+        modregrm = modRegRmGenerator(0X3, reg, getGpRegCode(dest, destType));
         machineCode.append(hexToStr(modregrm));
-        machineCode.append(hexToStr(secondOp.toInt(nullptr, 16), HexType::DirectAddress));
+        machineCode.append(hexToStr(src.toInt(nullptr, 16), HexType::DirectAddress));
 
         return {machineCode, true, ""};
     }
 
-    else if(firstOpType==OperandType::Mem8 || secondOpType==OperandType::Mem8 ||
-            firstOpType==OperandType::Mem16 || secondOpType==OperandType::Mem16) {
+    else if(destType==OperandType::Mem8 || srcType==OperandType::Mem8 ||
+            destType==OperandType::Mem16 || srcType==OperandType::Mem16) {
 
-        bool destIsMemAddr = firstOpType == OperandType::Mem8 || firstOpType == OperandType::Mem16;
+        bool destIsMemAddr = destType == OperandType::Mem8 || destType == OperandType::Mem16;
         QStringList addrArgs;
 
         if(destIsMemAddr) {
-            firstOp.remove("["); firstOp.remove("]");
-            addrArgs = firstOp.split(QRegExp("[+]"));
+            dest.remove("["); dest.remove("]");
+            addrArgs = dest.split(QRegExp("[+]"));
         } else {
-            secondOp.remove("["); secondOp.remove("]");
-            addrArgs = secondOp.split(QRegExp("[+]"));
+            src.remove("["); src.remove("]");
+            addrArgs = src.split(QRegExp("[+]"));
         }
 
         QStringList displacment = addrArgs.filter(QRegularExpression("[0-9a-fA-F]"));
@@ -143,38 +150,30 @@ InstRet Add::process() {
             else mod = (Mod1() ? 0x01 : 0x02);       //the rest of the cases!
         }
 
-        if((firstOp == "AL" || firstOp == "AX") && isHexValue(secondOp) && secondOpType != OperandType::Mem8 && secondOpType != Mem16) {
-            uchar opcode = getOpcode(firstOp +'-'+ Operands[secondOpType], &state);
+        if((dest == "AL" || dest == "AX") && isHexValue(src) && srcType != OperandType::Mem8 && srcType != Mem16) {
+            uchar opcode = getOpcode(dest +'-'+ Operands[srcType], &state);
             if(state == false) return {"", false, "Invalid Operands"};
             machineCode.append(hexToStr(opcode));
-            machineCode.append(hexToStr(extractDisplacment(secondOp).toInt(0, 16), HexType::DirectAddress));
+            machineCode.append(hexToStr(extractDisplacment(src).toInt(0, 16), HexType::DirectAddress));
             return {machineCode, true, ""};
         }
-        /* if((secondOp == "AL" || secondOp == "AX") && isHexValue(firstOp)) { */
-        /*     qDebug() << Operands[firstOpType] << " " << secondOp; */
-        /*     uchar opcode = getOpcode(Operands[firstOpType] +'-'+ secondOp, &state); */
-        /*     if(state == false) return {"", false, "Invalid Operands"}; */
-        /*     machineCode.append(hexToStr(opcode)); */
-        /*     machineCode.append(hexToStr(extractDisplacment(firstOp).toInt(0, 16), HexType::DirectAddress)); */
-        /*     return {machineCode, true, ""}; */
-        /* } */
 
         if(destIsMemAddr) {
-            if(secondOpType == OperandType::SegReg)
-                reg = getSegRegCode(secondOp);
-            if(secondOpType == OperandType::Reg16 || secondOpType == OperandType::Reg8)
-                reg = getGpRegCode(secondOp, secondOpType);
-            else if(secondOpType == Immed8 || secondOpType == Immed16)
+            if(srcType == OperandType::SegReg)
+                reg = getSegRegCode(src);
+            if(srcType == OperandType::Reg16 || srcType == OperandType::Reg8)
+                reg = getGpRegCode(src, srcType);
+            else if(srcType == Immed8 || srcType == Immed16)
                 reg = 0X00;
-            uchar rm = rmGenerator(firstOp);
+            uchar rm = rmGenerator(dest);
             if(rm == 0xFF) return {"", false, "Unhandeled Error"};
             modregrm = modRegRmGenerator(mod, reg, rm);
         } else {
-            if(firstOpType == OperandType::SegReg)
-                reg = getSegRegCode(firstOp);
+            if(destType == OperandType::SegReg)
+                reg = getSegRegCode(dest);
             else
-                reg = getGpRegCode(firstOp, firstOpType);
-            uchar rm = rmGenerator(secondOp);
+                reg = getGpRegCode(dest, destType);
+            uchar rm = rmGenerator(src);
             if(rm == 0xFF) return {"", false, "Unhandeled Error"};
             modregrm = modRegRmGenerator(mod, reg, rm);
         }
@@ -186,30 +185,30 @@ InstRet Add::process() {
         if(!displacment.empty())
             machineCode.append(hexToStr(displacment.first().toInt(0, 16), (directAddress ? HexType::DirectAddress : Address), Sign::Pos,
                         (mod == 0x01 ? OutputSize::Byte : OutputSize::Word)));
-        if(secondOpType == OperandType::Immed8)
-            machineCode.append(hexToStr(secondOp.toInt(nullptr, 16)));
-        else if (secondOpType == OperandType::Immed16)
-            machineCode.append(hexToStr(secondOp.toInt(nullptr, 16), HexType::OpCode, Sign::Pos, OutputSize::Word));
+        if(srcType == OperandType::Immed8)
+            machineCode.append(hexToStr(src.toInt(nullptr, 16)));
+        else if (srcType == OperandType::Immed16)
+            machineCode.append(hexToStr(src.toInt(nullptr, 16), HexType::OpCode, Sign::Pos, OutputSize::Word));
         return {machineCode, true, ""};
     }
 
-    else if(firstOpType==OperandType::Reg16 && secondOpType==OperandType::SegReg) {
+    else if(destType==OperandType::Reg16 && srcType==OperandType::SegReg) {
         opcode = getOpcode(generalExpression, &state);
         if(state == false) return {"", false, "Invalid Operands"};
-        modregrm = modRegRmGenerator(0x03, getSegRegCode(secondOp), getGpRegCode(firstOp, firstOpType));
+        modregrm = modRegRmGenerator(0x03, getSegRegCode(src), getGpRegCode(dest, destType));
         machineCode.append(hexToStr(opcode)); machineCode.append(hexToStr(modregrm));
         return {machineCode, true, ""};
     }
 
-    else if(firstOpType==OperandType::SegReg && secondOpType==OperandType::Reg16) {
+    else if(destType==OperandType::SegReg && srcType==OperandType::Reg16) {
         opcode = getOpcode(generalExpression, &state);
         if(state == false) return {"", false, "Invalid Operands"};
-        modregrm = modRegRmGenerator(0x03, getSegRegCode(firstOp), getGpRegCode(secondOp, secondOpType));
+        modregrm = modRegRmGenerator(0x03, getSegRegCode(dest), getGpRegCode(src, srcType));
         machineCode.append(hexToStr(opcode)); machineCode.append(hexToStr(modregrm));
         return {machineCode, true, ""};
     }
 
-    return {"", false, "Unhandled Error"};
+    return {"", false, "Invalid Operands"};
 }
 
 uchar Add::getOpcode(const QString& param, bool *ok) {
@@ -221,3 +220,8 @@ uchar Add::getOpcode(const QString& param, bool *ok) {
     if(ok != nullptr) *ok = false;
     return 0xF1; //not used
 }
+
+Add::Add(const QString& param) {
+    this->setCodeLine(param);
+}
+Add::Add() {}

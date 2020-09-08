@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "Editor.h"
+#include "assembler/precom.h"
 #include "Simulate.h"
 
 class MainWindow : public QMainWindow
@@ -116,6 +117,8 @@ private:
     QLabel *totalLinesLabel;
     QLabel *ModeLabel;
 
+    //The backend
+    InstRet assemble(const QString&);
 };
 
 #endif // MAINWINDOW_H

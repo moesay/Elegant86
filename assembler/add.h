@@ -5,8 +5,10 @@
 
 class Add : public Base {
     public:
+        Add(const QString&);
         InstRet process() override;
         uchar getOpcode(const QString&, bool* ok = nullptr) override;
+        Add();
 
     private:
         std::unordered_map<std::string, uchar> LUT{

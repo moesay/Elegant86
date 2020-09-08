@@ -1,19 +1,18 @@
 #include "mainwindow.h"
-#include "assembler/precom.h"
 #include <QDebug>
 #include <QScriptEngine>
 #include <QCoreApplication>
 
+QString fmt_err(const error &err) {
+    return "Error : "+std::get<0>(err)+"\t"+"{ "+std::get<1>(err)+" }"+" at line "+QString::number(std::get<2>(err));
+}
+
 MainWindow::MainWindow()
 {
     initUi();
-
-    Base *b = new Mov();
-    b->setCodeLine("mov 11, ax wptr");
-    auto [x, y, z] = b->process();
-    qDebug() << x;
-
-    tabWidget->setCurrentIndex(1);
+    /* editorWidget->codeEditor->document()->setPlainText("mov ax, 22\nmov bx, 'A'\nadd bx, [bx-5]\nmov dx, [bx+si-41]"); */
+    editorWidget->codeEditor->document()->setPlainText("mov si, ax");
+    /* editorWidget->codeEditor->document()->setPlainText("push wptr [bx+si+10]"); */
 }
 
 void MainWindow::initUi() {
@@ -55,9 +54,7 @@ void MainWindow::initUi() {
                 QString::number(editorWidget->codeEditor->textCursor().positionInBlock())));
 }
 
-MainWindow::~MainWindow()
-{
-}
+MainWindow::~MainWindow(){}
 
 void MainWindow::createToolBars() {
     fileToolBar = addToolBar(tr("&File"));
@@ -113,12 +110,14 @@ void MainWindow::newFile() {
         setFileStatus(FileStatus::NewFile);
     }
 }
+
 bool MainWindow::save() {
     if(currentFileName.isEmpty())
         return saveAs();
     else
         return saveFile(currentFileName);
 }
+
 bool MainWindow::saveAs() {
     QFileDialog dialog(this, tr("Save As ..."));
     dialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -144,7 +143,33 @@ void MainWindow::findAndReplace() {}
 
 void MainWindow::stepInto() {}
 void MainWindow::stepOut() {}
-void MainWindow::run() {tabWidget->setCurrentIndex(1);}
+
+void MainWindow::run() {
+
+    simulateWidget->clearLog();
+    simulateWidget->resetUi();
+    tabWidget->setCurrentIndex(1);
+    QStringList code = editorWidget->codeEditor->toPlainText().split('\n');
+    auto [processedCode, errors] = FirstPass::validate(code);
+    while(!errors.isEmpty()) {
+        for(const auto &err : std::as_const(errors)) {
+            simulateWidget->insertLog(fmt_err(err));
+        }
+        return;
+    }
+
+    for(const auto &line : std::as_const(processedCode)) {
+        if(line.isEmpty()) continue;
+        auto [machCode, success, errMsg] = assemble(line);
+        if(!success) {
+            simulateWidget->resetUi();
+            simulateWidget->insertLog(errMsg);
+            return;
+        }
+        simulateWidget->addToCodeViews(machCode, line);
+    }
+}
+
 void MainWindow::kill() {}
 void MainWindow::pause() {}
 void MainWindow::Continue() {}
@@ -232,4 +257,22 @@ void MainWindow::setFileStatus(const FileStatus& status) {
     auto [str, color] = getFileStatus(status);
     fileStatusLabel->setText("File Status : "+str);
     fileStatusLabel->setStyleSheet("QLabel { color : "+color+"; }");
+}
+
+InstRet MainWindow::assemble(const QString& param) {
+    std::unique_ptr<Base> b;
+    QString inst = param.split(" ").at(0).toUpper();
+    if(inst == "MOV") {
+        b = std::make_unique<Mov>(param);
+        return b->process();
+    }
+    else if(inst == "ADD") {
+        b = std::make_unique<Add>(param);
+        return b->process();
+    }
+    else if(inst == "PUSH") {
+        b = std::make_unique<Push>(param);
+        return b->process();
+    }
+    return {"", false, "Unknown Instruction"};
 }

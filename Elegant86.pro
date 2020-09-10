@@ -12,7 +12,7 @@ INCLUDEPATH += .
 RESOURCES = resources.qrc
 
 QMAKE_CXX = g++-10
-QMAKE_CXXFLAGS += -std=c++2a -g
+QMAKE_CXXFLAGS += -std=c++2a
 # You can make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
 # Please consult the documentation of the deprecated API in order to know

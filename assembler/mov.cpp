@@ -119,7 +119,7 @@ InstRet Mov::process() {
         opcode = getOpcode(dest+"-IMMED16", &state);
         if(state == false) return {"", false, "Invalid Operands"};
         machineCode.append(hexToStr(opcode)); //the instruction machine code, in the case its mov XX, XX is any 8 bit reg
-        machineCode.append(hexToStr(src.toInt(nullptr, 16), HexType::DirectAddress));
+        machineCode.append(hexToStr(src.toInt(nullptr, 16), OutputSize::Word));
 
         return {machineCode, true, ""};
     }
@@ -191,14 +191,14 @@ InstRet Mov::process() {
             uchar opcode = getOpcode(dest +'-'+ Operands[srcType], &state);
             if(state == false) return {"", false, "Invalid Operands"};
             machineCode.append(hexToStr(opcode));
-            machineCode.append(hexToStr(extractDisplacment(src).toInt(0, 16), HexType::DirectAddress));
+            machineCode.append(hexToStr(extractDisplacment(src).toInt(0, 16), OutputSize::Word));
             return {machineCode, true, ""};
         }
         if((src == "AL" || src == "AX") && isHexValue(dest)) {
             uchar opcode = getOpcode(Operands[destType] +'-'+ src, &state);
             if(state == false) return {"", false, "Invalid Operands"};
             machineCode.append(hexToStr(opcode));
-            machineCode.append(hexToStr(extractDisplacment(dest).toInt(0, 16), HexType::DirectAddress));
+            machineCode.append(hexToStr(extractDisplacment(dest).toInt(0, 16), OutputSize::Word));
             return {machineCode, true, ""};
         }
 
@@ -243,12 +243,11 @@ InstRet Mov::process() {
         machineCode.append(hexToStr(opcode));
         machineCode.append(hexToStr(modregrm));
         if(!displacment.empty())
-            machineCode.append(hexToStr(displacment.first().toInt(0, 16), (directAddress ? HexType::DirectAddress : Address), Sign::Pos,
-                        (mod == 0x01 ? OutputSize::Byte : OutputSize::Word)));
+            machineCode.append(hexToStr(displacment.first().toInt(0, 16), ((directAddress || mod == 0x02) ? OutputSize::Word : OutputSize::Byte)));
         if(srcType == OperandType::Immed8)
             machineCode.append(hexToStr(src.toInt(nullptr, 16)));
         else if (srcType == OperandType::Immed16)
-            machineCode.append(hexToStr(src.toInt(nullptr, 16), HexType::OpCode, Sign::Pos, OutputSize::Word));
+            machineCode.append(hexToStr(src.toInt(nullptr, 16), OutputSize::Word));
         return {machineCode, true, ""};
     }
 

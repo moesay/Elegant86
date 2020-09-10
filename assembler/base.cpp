@@ -225,19 +225,19 @@ QString Base::signHandler(const QString& param, const OperandType& ot) {
     if(ot == OperandType::NegImmed8) {
         if(abs(param.toInt(nullptr, 16)) > 0xFE) {
             uint16_t hexVal = param.toInt(nullptr, 16);
-            return hexToStr(hexVal, HexType::OpCode, Sign::Neg);
+            return hexToStr(hexVal, OutputSize::Dynamic, Sign::Neg);
             /* return QString::number(hexVal, 16).toUpper(); */
         }
         else {
             uint8_t hexVal = param.toInt(nullptr, 16);
-            return hexToStr(hexVal, HexType::OpCode, Sign::Neg);
+            return hexToStr(hexVal, OutputSize::Dynamic, Sign::Neg);
             /* return QString::number(hexVal, 16).toUpper(); */
         }
     }
     else if(ot == OperandType::NegImmed16) {
         if(abs(param.toInt(nullptr, 16)) > 0x7FFF) return "ERROR";
         uint16_t hexVal = param.toInt(nullptr, 16);
-        return hexToStr(hexVal, HexType::OpCode, Sign::Neg);
+        return hexToStr(hexVal, OutputSize::Dynamic, Sign::Neg);
         /* return QString::number(hexVal, 16).toUpper(); */
     }
     return "ERROR";

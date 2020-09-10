@@ -140,7 +140,7 @@ bool FirstPass::eval(QString& param) {
         param = bufS;
         return false;
     }
-    ret = hexToStr(param.toInt(), HexType::OpCode, Sign::Neg);
+    ret = hexToStr(param.toInt(), OutputSize::Dynamic, Sign::Neg);
     param="";
     for(const auto &reg : buf) {
         param+=reg+"+";

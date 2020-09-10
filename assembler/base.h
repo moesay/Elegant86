@@ -10,15 +10,15 @@
 #include <sstream>
 #include "exc.h"
 
-enum Pointer : uint8_t {
+enum class Pointer : uint8_t {
     Byte, Word, None
 };
 
-enum HexType : uint8_t {
+enum class HexType : uint8_t {
     Address, OpCode, DirectAddress
 };
 
-enum Sign : uint8_t {
+enum class Sign : uint8_t {
     Pos, Neg
 };
 
@@ -26,9 +26,7 @@ enum class OutputSize : uint8_t {
     Byte, Word, Dynamic
 };
 
-template <typename T>
-QString hexToStr (T param, HexType ht = HexType::OpCode, Sign sign = Sign::Pos, OutputSize opSize = OutputSize::Dynamic)
-    requires std::is_integral_v<T>
+QString hexToStr (const std::integral auto &param, OutputSize opSize = OutputSize::Dynamic, Sign sign = Sign::Pos)
 {
     std::stringstream ss;
 
@@ -55,19 +53,19 @@ QString hexToStr (T param, HexType ht = HexType::OpCode, Sign sign = Sign::Pos, 
         }
     }
 
-    if ((param > 0x7F) && (param < 0xFF80) && (ht==HexType::Address && ss.str().length() != 4) && (param != 0xFF)) {
-        ss.seekg(0);
-        sign == Sign::Pos ? ss << "00" : ss << "FF";
-    }
+    /* if ((param > 0x7F) && (param < 0xFF80) && (ht==HexType::Address && ss.str().length() != 4) && (param != 0xFF)) { */
+    /*     ss.seekg(0); */
+    /*     sign == Sign::Pos ? ss << "00" : ss << "FF"; */
+    /* } */
 
     //the direct address has to be two bytes.
-    if(ht == HexType::DirectAddress) {
-        ss.seekg(0);
-        if(sign == Sign::Pos)
-            while(ss.str().length() < 4) ss << "0";
-        else
-            while(ss.str().length() < 4) ss << "F";
-    }
+    /* if(ht == HexType::DirectAddress) { */
+    /*     ss.seekg(0); */
+    /*     if(sign == Sign::Pos) */
+    /*         while(ss.str().length() < 4) ss << "0"; */
+    /*     else */
+    /*         while(ss.str().length() < 4) ss << "F"; */
+    /* } */
 
     if(opSize != OutputSize::Dynamic) {
         if(opSize == OutputSize::Byte) {

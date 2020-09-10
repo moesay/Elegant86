@@ -87,8 +87,7 @@ InstRet Push::process() {
         machineCode.append(hexToStr(opcode));
         machineCode.append(hexToStr(modregrm));
         if(!displacment.empty())
-            machineCode.append(hexToStr(displacment.first().toInt(0, 16), (directAddress ? HexType::DirectAddress : Address), Sign::Pos,
-                        (mod == 0x01 ? OutputSize::Byte : OutputSize::Word)));
+            machineCode.append(hexToStr(displacment.first().toInt(0, 16), ((directAddress || mod == 0x02) ? OutputSize::Word : OutputSize::Byte)));
         return {machineCode, true, ""};
     }
 

@@ -12,6 +12,7 @@ public:
     Labels(const Labels&) = delete;
     static bool labelExists(QString);
     static void addLabel(const int&, QString);
+    static void clearAll();
     static bool isLableDef(QString);
 private:
     static QList<Label_T> labelsList;

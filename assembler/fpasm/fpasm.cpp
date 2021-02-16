@@ -1,15 +1,15 @@
 #include "fpasm.h"
 #include <QScriptEngine>
 
-InstRet_T FirstPass::assemble(const QString& line) {
+InstRet_T FirstPhase::assemble(const QString& line) {
     return Get().Iassemble(line);
 }
 
-std::tuple<QStringList, QList<Error_T>> FirstPass::validate(const QStringList& param) {
+std::tuple<QStringList, QList<Error_T>> FirstPhase::validate(const QStringList& param) {
     return Get().Ivalidate(param);
 }
 
-void FirstPass::removeComments(QStringList &param) noexcept {
+void FirstPhase::removeComments(QStringList &param) noexcept {
     param.append(";"); //segfault
     param.erase(
             std::remove_if(std::begin(param), std::end(param), [](QString &p) {
@@ -29,11 +29,10 @@ void FirstPass::removeComments(QStringList &param) noexcept {
  * Labels definition : .LBL:
  * Labels calling : jmp .LBL
  */
-QList<Error_T> FirstPass::getLabels(QStringList &param) {
+QList<Error_T> FirstPhase::getLabels(QStringList &param) {
     /*
      * @INLINE LABELS ARE NOT SUPPORTED, YET...OR NEVER!
      * should be replaced by cs:[addr] (!!) : maybe not! this should be resolved when implemeting the cpu
-     * TODO:
      */
     QList<Error_T> ret;
     int bytesCount = 0;
@@ -52,7 +51,7 @@ QList<Error_T> FirstPass::getLabels(QStringList &param) {
     return ret;
 }
 
-std::tuple<QStringList, QList<Error_T>> FirstPass::Ivalidate(const QStringList& code) {
+std::tuple<QStringList, QList<Error_T>> FirstPhase::Ivalidate(const QStringList& code) {
 
     QRegExp negRegx("-[0-9a-fA-F]+");
     QRegExp charRegx("'.'|\".\"");
@@ -68,7 +67,7 @@ std::tuple<QStringList, QList<Error_T>> FirstPass::Ivalidate(const QStringList& 
      * @Rules :
      *  1- Check that each line begins with an instruction
      *  2- If there is a negative number, process it
-     *  3- Evaluate the addresses mathmatical operations
+     *  3- Evaluate the addresses mathematical operations
      */
     for (auto &p : readyCode) {
         ++lineNumber;
@@ -114,7 +113,7 @@ std::tuple<QStringList, QList<Error_T>> FirstPass::Ivalidate(const QStringList& 
     return {readyCode, ret};
 }
 
-bool FirstPass::eval(QString& param) {
+bool FirstPhase::eval(QString& param) {
     QString bufS = param;
 
     QStringList buf;
@@ -155,7 +154,7 @@ bool FirstPass::eval(QString& param) {
     return true;
 }
 
-InstRet_T FirstPass::Iassemble(const QString& param) {
+InstRet_T FirstPhase::Iassemble(const QString& param) {
     std::unique_ptr<Base> b;
     QString inst = param.split(" ").at(0).toUpper();
     //Because we need to assemble to code to calculate the offset of the label.
@@ -176,8 +175,4 @@ InstRet_T FirstPass::Iassemble(const QString& param) {
         return b->process();
     }
     return {"", false, "Unknown Instruction"};
-}
-
-bool FirstPass::isLabel(const QString& line) {
-    return (line.startsWith('.') && line.endsWith(':'));
 }

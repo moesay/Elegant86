@@ -26,21 +26,20 @@ const static std::list<QString> instructionsLUT {
         "STI"  ,"HLT"  , "WAIT", "ESC" ,"LOCK"
 };
 
-class FirstPass : public Base {
+class FirstPhase : public Base {
     public:
-        FirstPass (const FirstPass&) = delete;
+        FirstPhase (const FirstPhase&) = delete;
         InstRet_T process() override{return {"", false, ""};};
         uchar getOpcode(const QString&, [[maybe_unused]] bool *ok = nullptr) override {return 0x00;};
         static std::tuple<QStringList, QList<Error_T>> validate (const QStringList&);
         static InstRet_T assemble(const QString&);
     private:
-        static FirstPass& Get() {
-            static FirstPass ref;
+        static FirstPhase& Get() {
+            static FirstPhase ref;
             return ref;
         }
-        FirstPass() {};
+        FirstPhase() {};
         QStringList readyCode;
-        bool isLabel(const QString&);
         QList<Error_T> getLabels(QStringList&);
         std::tuple<QStringList, QList<Error_T>> Ivalidate(const QStringList&);
         InstRet_T Iassemble(const QString&);

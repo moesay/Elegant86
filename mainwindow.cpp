@@ -1,7 +1,4 @@
 #include "mainwindow.h"
-#include <QDebug>
-#include <QScriptEngine>
-#include <QCoreApplication>
 
 QString fmt_err(const Error_T &err) {
     return "Error : "+std::get<0>(err)+"\t"+"{ "+std::get<1>(err)+" }"+" at line "+QString::number(std::get<2>(err));
@@ -146,9 +143,10 @@ void MainWindow::run() {
     simulateWidget->clearLog();
     simulateWidget->resetUi();
     tabWidget->setCurrentIndex(1);
+    Labels::clearAll();
 
     QStringList code = editorWidget->codeEditor->toPlainText().split('\n');
-    auto [processedCode, errors] = FirstPass::validate(code);
+    auto [processedCode, errors] = FirstPhase::validate(code);
 
     while(!errors.isEmpty()) {
         for(const auto &err : std::as_const(errors)) {
@@ -159,10 +157,11 @@ void MainWindow::run() {
 
     for(const auto &line : std::as_const(processedCode)) {
         if(line.isEmpty()) continue;
-        auto [machCode, success, errMsg] = FirstPass::assemble(line);
+        auto [machCode, success, errMsg] = FirstPhase::assemble(line);
         if(!success) {
             simulateWidget->resetUi();
             simulateWidget->insertLog(errMsg);
+            Labels::clearAll();
             return;
         }
         simulateWidget->addToCodeViews(machCode, line);
@@ -239,7 +238,7 @@ void MainWindow::setCurrentFileName(const QString& fileName) {
     setWindowTitle(tr("%1[*] - %2").arg(shownFileName, QCoreApplication::applicationName()));
 }
 
-std::tuple <QString, QString> MainWindow::getFileStatus(const FileStatus& status){
+std::tuple<QString, QString> MainWindow::getFileStatus(const FileStatus& status){
     switch(status) {
         case NewFile:
             return {"New File", "black"}; break;

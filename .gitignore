@@ -5,6 +5,7 @@ TODO
 __Tagbar__.1
 obj/
 mocs/
+build/
 
 # C++ objects and libs
 *.slo

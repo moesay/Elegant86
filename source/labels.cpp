@@ -13,7 +13,8 @@ bool Labels::labelExists(QString lbl) {
 }
 
 void Labels::addLabel(const int& bytes, QString lbl) {
-    Labels::labelsList.append(std::make_tuple(bytes, lbl.remove(':')));
+    lbl = lbl.remove(':');
+    Labels::labelsList.append(std::make_tuple(bytes, lbl));
 }
 
 /*
@@ -25,4 +26,8 @@ bool Labels::isLableDef(QString lbl) {
     lbl = lbl.left(lbl.length() -1);
     lbl = lbl.right(lbl.length() -1);
     return (!lbl.contains('.') && !lbl.contains(':') && lbl.length() > 0 && init);
+}
+
+void Labels::clearAll() {
+    labelsList.clear();
 }

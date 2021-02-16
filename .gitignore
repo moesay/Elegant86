@@ -36,6 +36,14 @@ ui_*.h
 *.qmlc
 *.jsc
 Makefile*
+CMakeFiles/
+Elegant86
+Elegant86_autogen/
+CMakeCache.txt
+Testing/
+tests/Test_autogen
+CTestTestfile.cmake
+cmake_install.cmake
 *build-*
 *.qm
 *.prl

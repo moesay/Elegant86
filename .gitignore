@@ -39,11 +39,16 @@ Makefile*
 CMakeFiles/
 Elegant86
 Elegant86_autogen/
+tests/Elegant86_autogen/
 CMakeCache.txt
+tests/CMakeCache.txt
+tests/Test
 Testing/
 tests/Test_autogen
 CTestTestfile.cmake
+tests/CTestTestfile.cmake
 cmake_install.cmake
+tests/cmake_install.cmake
 *build-*
 *.qm
 *.prl

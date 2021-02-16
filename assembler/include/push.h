@@ -2,6 +2,7 @@
 #define PUSH_H
 
 #include "base.h"
+#include <include/exc.h>
 
 class Push : public Base {
     public:

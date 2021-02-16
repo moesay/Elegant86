@@ -5,6 +5,7 @@
 #include <QByteArray>
 #include <QDebug>
 #include <tuple>
+#include <concepts>
 #include <QString>
 #include <unordered_map>
 #include <sstream>
@@ -163,6 +164,7 @@ class Base {
         uchar getSegRegPrefix(const QString&, bool *ok = nullptr);
         void setCodeLine(const QString&);
         QString signHandler(const QString&, const OperandType&);
+        bool isMod1(const int&);
         bool registerMod(const QString&);
         uchar modRegRmGenerator(const uchar&, const uchar&, const uchar&);
         uchar rmGenerator(const QString&);

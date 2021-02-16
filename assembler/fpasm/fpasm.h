@@ -2,8 +2,8 @@
 #define FPASM_H
 
 #include <QList>
-#include "../base.h"
-#include "../precom.h"
+#include <assembler/include/base.h>
+#include <assembler/include/precom.h>
 
 using error = std::tuple<QString, QString, int>;
 using line  = std::tuple<QString, OperandType, OperandType>;
@@ -31,9 +31,10 @@ const static std::list<QString> instructionsLUT {
 class FirstPass : public Base {
     public:
         FirstPass (const FirstPass&) = delete;
-        InstRet process() {return {"", false, ""};};
-        uchar getOpcode(const QString&, [[maybe_unused]] bool *ok = nullptr) {return 0x00;};
+        InstRet process() override{return {"", false, ""};};
+        uchar getOpcode(const QString&, [[maybe_unused]] bool *ok = nullptr) override {return 0x00;};
         static std::tuple<QStringList, QList<error>> validate (const QStringList&);
+        static InstRet assemble(const QString&);
     private:
         static FirstPass& Get() {
             static FirstPass ref;
@@ -41,9 +42,10 @@ class FirstPass : public Base {
         }
         FirstPass() {};
         QStringList readyCode;
-        QList<label> getLabels(const QStringList&);
+        bool isLabel(const QString&);
+        QList<label> getLabels(QStringList&);
         std::tuple<QStringList, QList<error>> Ivalidate(const QStringList&);
-        InstRet assemble(const QString&);
+        InstRet Iassemble(const QString&);
         void negativeSignProcess(QStringList&);
         void removeComments(QStringList&) noexcept;
         bool eval(QString&);

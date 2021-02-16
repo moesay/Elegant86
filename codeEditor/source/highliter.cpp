@@ -1,4 +1,4 @@
-#include "highliter.h"
+#include "../include/highliter.h"
 #include <QDebug>
 Highliter::Highliter(QTextDocument *parent) : QSyntaxHighlighter(parent) {
 

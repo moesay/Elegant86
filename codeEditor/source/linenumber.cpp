@@ -1,5 +1,5 @@
-#include "linenumber.h"
-#include "codeeditor.h"
+#include <codeEditor/include/linenumber.h>
+#include <codeEditor/include/codeeditor.h>
 
 LineNumber::LineNumber(CodeEditor *editor) : QWidget (editor), codeEditor(editor)
 {}

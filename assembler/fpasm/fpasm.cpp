@@ -1,8 +1,12 @@
 #include "fpasm.h"
 #include <QScriptEngine>
 
+InstRet FirstPass::assemble(const QString& line) {
+    return Get().Iassemble(line);
+}
+
 std::tuple<QStringList, QList<error>> FirstPass::validate(const QStringList& param) {
-    return {Get().Ivalidate(param)};
+    return Get().Ivalidate(param);
 }
 
 void FirstPass::removeComments(QStringList &param) noexcept {
@@ -21,7 +25,7 @@ void FirstPass::removeComments(QStringList &param) noexcept {
             });
 }
 
-QList<label> FirstPass::getLabels(const QStringList &param) {
+QList<label> FirstPass::getLabels(QStringList &param) {
     /*
      * @INLINE LABELS ARE NOT SUPPORTED, YET...OR NEVER!
      * When a label is detected, it should be removed after calculating its address and every occurrence of it
@@ -34,9 +38,11 @@ QList<label> FirstPass::getLabels(const QStringList &param) {
     for (auto p : param) {
         auto [machCode, success, errMsg] = assemble(p);
         bytesCount += machCode.length() / 2;
-        if(!success)
-            if(p.startsWith('.') && p.endsWith(':'))
+        if(errMsg == "LBL")
+            if(isLabel(p)) {
                 ret.append(std::make_tuple(bytesCount, p));
+                p = bytesCount;
+            }
     }
     return ret;
 }
@@ -51,6 +57,7 @@ std::tuple<QStringList, QList<error>> FirstPass::Ivalidate(const QStringList& co
     readyCode = code;
     removeComments(readyCode);
     lbls = getLabels(readyCode);
+
     for(auto [p1, p2] : lbls) {
         qDebug() << p1 << p2 << "END\n";
     }
@@ -149,9 +156,14 @@ bool FirstPass::eval(QString& param) {
     return true;
 }
 
-InstRet FirstPass::assemble(const QString& param) {
+InstRet FirstPass::Iassemble(const QString& param) {
     std::unique_ptr<Base> b;
     QString inst = param.split(" ").at(0).toUpper();
+    //Because we need to assemble to code to calculate the offset of the label.
+    //we should be ok with lables defs
+    if(isLabel(inst))
+        return {"", true, "LBL"};
+
     if(inst == "MOV") {
         b = std::make_unique<Mov>(param);
         return b->process();
@@ -165,4 +177,8 @@ InstRet FirstPass::assemble(const QString& param) {
         return b->process();
     }
     return {"", false, "Unknown Instruction"};
+}
+
+bool FirstPass::isLabel(const QString& line) {
+    return (line.startsWith('.') && line.endsWith(':'));
 }

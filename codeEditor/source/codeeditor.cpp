@@ -1,4 +1,4 @@
-#include "codeeditor.h"
+#include "../include/codeeditor.h"
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit (parent) {
     lineNumber = new LineNumber(this);

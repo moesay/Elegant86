@@ -1,5 +1,4 @@
-#include "base.h"
-
+#include <assembler/include/base.h>
 QList<label> lbls;
 
 bool Base::isMemAddr(const QString &param) {
@@ -241,4 +240,19 @@ QString Base::signHandler(const QString& param, const OperandType& ot) {
         /* return QString::number(hexVal, 16).toUpper(); */
     }
     return "ERROR";
+}
+
+/*
+ * The Mod byte (other that 0x03) is specifyied by the length of the displacment.
+ * But it's not always the case, a smart assembler will produce as short assembly code as possible.
+ * If the number is within the range that F-extending it will give the same value. then strip the F's and
+ * set the Mod to be 0x01, otherwise, the Mod is 0x02
+ * Mod 0x03 is for registers and 0x00 has nothing to do with displacment. It only works when its a direct address.
+ * @Known Bug : The Mod for negative numbers is miscalculated
+ */
+bool Base::isMod1(const int &displacmentValue) {
+
+    return ((displacmentValue >= 0x0000 && displacmentValue <= 0x007F) ||
+            (displacmentValue >= 0xFF80 && displacmentValue < 0xFFFF));
+
 }

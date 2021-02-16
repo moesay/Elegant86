@@ -1,5 +1,5 @@
-#include "base.h"
-#include "push.h"
+#include <assembler/include/base.h>
+#include <assembler/include/push.h>
 
 InstRet Push::process() {
 
@@ -64,16 +64,10 @@ InstRet Push::process() {
         if(displacment.size() >= 1)
             displacmentValue = displacment.first().toInt(0, 16);
 
-        //Known Bug : The MOD for negative numbers is miscalculated
-        auto Mod1 = [displacmentValue]()-> bool {
-            return ((displacmentValue >= 0x0000 && displacmentValue <= 0x007F) ||
-                    (displacmentValue >= 0xFF80 && displacmentValue < 0xFFFF));
-        };
-
         if(displacment.empty()) mod = 0x00;         //for bx+si, bp+di ... and si, di as well
         else if(!displacment.empty()) {
             if(displacment.size() == 1 && addrArgs.size() == 1) mod = 0x00; //direct address;
-            else mod = (Mod1() ? 0x01 : 0x02);       //the rest of the cases!
+            else mod = (isMod1(displacmentValue) ? 0x01 : 0x02);       //the rest of the cases!
         }
 
         reg = 0X06;

@@ -1,7 +1,7 @@
 #include <assembler/include/base.h>
 #include <assembler/include/push.h>
 
-InstRet Push::process() {
+InstRet_T Push::process() {
 
     bool state = true;
     uchar modregrm;

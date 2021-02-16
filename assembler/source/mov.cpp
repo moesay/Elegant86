@@ -1,7 +1,7 @@
 #include <assembler/include/base.h>
 #include <assembler/include/mov.h>
 
-InstRet Mov::process() {
+InstRet_T Mov::process() {
 
     /*
      * All ::process() functions of Elegant86 works the same way

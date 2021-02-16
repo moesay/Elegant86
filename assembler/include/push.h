@@ -2,12 +2,11 @@
 #define PUSH_H
 
 #include "base.h"
-#include <include/exc.h>
 
 class Push : public Base {
     public:
         Push(const QString&);
-        InstRet process() override;
+        InstRet_T process() override;
         uchar getOpcode(const QString&, bool* ok = nullptr) override;
 
     private:

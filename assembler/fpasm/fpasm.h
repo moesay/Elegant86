@@ -4,9 +4,7 @@
 #include <QList>
 #include <assembler/include/base.h>
 #include <assembler/include/precom.h>
-
-using error = std::tuple<QString, QString, int>;
-using line  = std::tuple<QString, OperandType, OperandType>;
+#include <include/labels.h>
 
 const static std::list<QString> instructionsLUT {
         "MOV"  ,"PUSH" , "POP" , "XCHG","IN"  ,"OUT" ,
@@ -31,10 +29,10 @@ const static std::list<QString> instructionsLUT {
 class FirstPass : public Base {
     public:
         FirstPass (const FirstPass&) = delete;
-        InstRet process() override{return {"", false, ""};};
+        InstRet_T process() override{return {"", false, ""};};
         uchar getOpcode(const QString&, [[maybe_unused]] bool *ok = nullptr) override {return 0x00;};
-        static std::tuple<QStringList, QList<error>> validate (const QStringList&);
-        static InstRet assemble(const QString&);
+        static std::tuple<QStringList, QList<Error_T>> validate (const QStringList&);
+        static InstRet_T assemble(const QString&);
     private:
         static FirstPass& Get() {
             static FirstPass ref;
@@ -43,9 +41,9 @@ class FirstPass : public Base {
         FirstPass() {};
         QStringList readyCode;
         bool isLabel(const QString&);
-        QList<label> getLabels(QStringList&);
-        std::tuple<QStringList, QList<error>> Ivalidate(const QStringList&);
-        InstRet Iassemble(const QString&);
+        QList<Error_T> getLabels(QStringList&);
+        std::tuple<QStringList, QList<Error_T>> Ivalidate(const QStringList&);
+        InstRet_T Iassemble(const QString&);
         void negativeSignProcess(QStringList&);
         void removeComments(QStringList&) noexcept;
         bool eval(QString&);

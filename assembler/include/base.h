@@ -9,7 +9,8 @@
 #include <QString>
 #include <unordered_map>
 #include <sstream>
-#include "exc.h"
+#include <include/exc.h>
+#include <include/labels.h>
 
 enum class Pointer : uint8_t {
     Byte, Word, None
@@ -101,9 +102,9 @@ enum OperandType : uint8_t {
     NOP, Char, Indexer, Unknown
 };
 
-using InstRet = std::tuple<QString, bool, QString>;
-using label = std::tuple<uint16_t, QString>;
-extern QList<label> lbls;
+using InstRet_T = std::tuple<QString, bool, QString>;
+using Error_T = std::tuple<QString, QString, int>; //{Error Message, The word caused the error, the line number}
+/* using line  = std::tuple<QString, OperandType, OperandType>; */
 
 const static std::array<QString, 15> Operands{
         "MEM", "MEM8", "MEM16", "REG8", "REG16", "IMMED8", "IMMED16", "SEGREG",
@@ -142,7 +143,7 @@ class Base {
         QString codeLine;
         Pointer pointerType = Pointer::None;
     public:
-        virtual InstRet process() = 0;
+        virtual InstRet_T process() = 0;
         bool isImmed8(const QString&);
         bool isChar(const QString&);
         void hexValidator(QStringList&);

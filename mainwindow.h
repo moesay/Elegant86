@@ -2,9 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "Editor.h"
-#include "assembler/precom.h"
-#include "Simulate.h"
+#include <include/Editor.h>
+#include <assembler/include/precom.h>
+#include <include/Simulate.h>
 
 class MainWindow : public QMainWindow
 {
@@ -117,8 +117,6 @@ private:
     QLabel *totalLinesLabel;
     QLabel *ModeLabel;
 
-    //The backend
-    InstRet assemble(const QString&);
 };
 
 #endif // MAINWINDOW_H

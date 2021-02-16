@@ -1,7 +1,7 @@
 #include <assembler/include/base.h>
 #include <assembler/include/add.h>
 
-InstRet Add::process() {
+InstRet_T Add::process() {
 
     bool state = true;
     uchar modregrm;

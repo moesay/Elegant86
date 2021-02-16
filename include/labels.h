@@ -10,9 +10,10 @@ using Label_T = std::tuple<int, QString>;       //{Label offset, The label itsel
 class Labels {
 public:
     Labels(const Labels&) = delete;
-    static bool labelExists(const QString&);
-    static void addLabel(const int&, const QString&);
-//private:
+    static bool labelExists(QString);
+    static void addLabel(const int&, QString);
+    static bool isLableDef(QString);
+private:
     static QList<Label_T> labelsList;
     Labels() {}
 };

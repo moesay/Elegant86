@@ -6,7 +6,7 @@
 class Add : public Base {
     public:
         Add(const QString&);
-        InstRet process() override;
+        InstRet_T process() override;
         uchar getOpcode(const QString&, bool* ok = nullptr) override;
         Add();
 

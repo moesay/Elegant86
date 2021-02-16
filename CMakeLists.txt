@@ -6,7 +6,21 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_CXX_COMPILER /usr/bin/g++-10)
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+    execute_process(
+        COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+    if (NOT (GCC_VERSION VERSION_GREATER 10 OR GCC_VERSION VERSION_EQUAL 10))
+        message(FATAL_ERROR "${PROJECT_NAME} requires g++ 10 or greater.")
+    endif ()
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    execute_process(
+        COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE CLANG_VERSION)
+    if (NOT (CLANG_VERSION VERSION_GREATER 10 OR CLANG_VERSION VERSION_EQUAL 10))
+        message(FATAL_ERROR "${PROJECT_NAME} requires clang 10 or greater.")
+    endif ()
+else ()
+    message(FATAL_ERROR "Your C++ compiler does not support C++20.")
+endif ()
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -28,6 +42,7 @@ file(GLOB project_files
     "resources.qrc"
     )
 
+
 if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
@@ -37,6 +52,12 @@ find_package(Qt5 COMPONENTS Script REQUIRED)
 
 add_executable(Elegant86 ${project_files})
 
+set_property(TARGET Elegant86 PROPERTY CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 target_link_libraries(Elegant86 Qt5::Widgets Qt5::Script)
+
+#Testing setup
+
+enable_testing()
+add_subdirectory(tests)

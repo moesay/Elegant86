@@ -3,16 +3,13 @@
 #include <QScriptEngine>
 #include <QCoreApplication>
 
-QString fmt_err(const error &err) {
+QString fmt_err(const Error_T &err) {
     return "Error : "+std::get<0>(err)+"\t"+"{ "+std::get<1>(err)+" }"+" at line "+QString::number(std::get<2>(err));
 }
 
 MainWindow::MainWindow()
 {
     initUi();
-    /* editorWidget->codeEditor->document()->setPlainText("mov ax, 22\nmov bx, 'A'\nadd bx, [bx-5]\nmov dx, [bx+si-41]"); */
-    editorWidget->codeEditor->document()->setPlainText("mov si, ax");
-    /* editorWidget->codeEditor->document()->setPlainText("push wptr [bx+si+10]"); */
 }
 
 void MainWindow::initUi() {
@@ -28,7 +25,7 @@ void MainWindow::initUi() {
     tabWidget->addTab(editorWidget, tr("Code Editor"));
     tabWidget->addTab(simulateWidget, tr("Simulator"));
     setCentralWidget(tabWidget);
-    /* setFileStatus(FileStatus::NewFile); */
+    setFileStatus(FileStatus::NewFile);
 
     connect(editorWidget->codeEditor, SIGNAL(cursorPositionChanged()), this, SLOT(updateStatusBar()));
 
@@ -149,8 +146,10 @@ void MainWindow::run() {
     simulateWidget->clearLog();
     simulateWidget->resetUi();
     tabWidget->setCurrentIndex(1);
+
     QStringList code = editorWidget->codeEditor->toPlainText().split('\n');
     auto [processedCode, errors] = FirstPass::validate(code);
+
     while(!errors.isEmpty()) {
         for(const auto &err : std::as_const(errors)) {
             simulateWidget->insertLog(fmt_err(err));
@@ -160,7 +159,7 @@ void MainWindow::run() {
 
     for(const auto &line : std::as_const(processedCode)) {
         if(line.isEmpty()) continue;
-        auto [machCode, success, errMsg] = assemble(line);
+        auto [machCode, success, errMsg] = FirstPass::assemble(line);
         if(!success) {
             simulateWidget->resetUi();
             simulateWidget->insertLog(errMsg);
@@ -257,22 +256,4 @@ void MainWindow::setFileStatus(const FileStatus& status) {
     auto [str, color] = getFileStatus(status);
     fileStatusLabel->setText("File Status : "+str);
     fileStatusLabel->setStyleSheet("QLabel { color : "+color+"; }");
-}
-
-InstRet MainWindow::assemble(const QString& param) {
-    std::unique_ptr<Base> b;
-    QString inst = param.split(" ").at(0).toUpper();
-    if(inst == "MOV") {
-        b = std::make_unique<Mov>(param);
-        return b->process();
-    }
-    else if(inst == "ADD") {
-        b = std::make_unique<Add>(param);
-        return b->process();
-    }
-    else if(inst == "PUSH") {
-        b = std::make_unique<Push>(param);
-        return b->process();
-    }
-    return {"", false, "Unknown Instruction"};
 }

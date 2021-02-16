@@ -7,7 +7,7 @@ class Mov : public Base {
     public:
         Mov(const QString&);
         Mov();
-        InstRet process() override;
+        InstRet_T process() override;
         uchar getOpcode(const QString&, bool* ok = nullptr) override;
 
     private:

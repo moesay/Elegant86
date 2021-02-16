@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <gtest/gtest.h>
-#include "assembler/precom.h"
+#include <assembler/include/precom.h>
 #include <iostream>
 #include "mov.hpp"
 #include "add.hpp"

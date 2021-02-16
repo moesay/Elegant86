@@ -1,5 +1,4 @@
 #include <assembler/include/base.h>
-QList<label> lbls;
 
 bool Base::isMemAddr(const QString &param) {
     if(param.startsWith('[') && param.endsWith(']'))
@@ -102,8 +101,7 @@ enum OperandType Base::getOperandType(const QString& operand) {
     else if(SegRegs.contains(strippedOperand.trimmed().toUpper())) return OperandType::SegReg;
     else if(isMemAddr(strippedOperand)) return OperandType::MemAddr;
     //TBF, remove the const cast and add buf variable.
-    else if(std::find(std::begin(lbls), std::end(lbls), std::make_tuple(0,
-                    const_cast<QString*>(&strippedOperand)->remove(':'))) != std::end(lbls)) return OperandType::Label;
+    else if(Labels::labelExists(strippedOperand)) return OperandType::Label;
     else if(isImmed8(strippedOperand)) return (strippedOperand.toInt(nullptr, 16) >= 0 ? OperandType::Immed8 : OperandType::NegImmed8);
     else if(isImmed16(strippedOperand)) return (strippedOperand.toInt(nullptr, 16) >= 0? OperandType::Immed16 : OperandType::NegImmed16);
     return OperandType::Unknown;
@@ -251,8 +249,6 @@ QString Base::signHandler(const QString& param, const OperandType& ot) {
  * @Known Bug : The Mod for negative numbers is miscalculated
  */
 bool Base::isMod1(const int &displacmentValue) {
-
     return ((displacmentValue >= 0x0000 && displacmentValue <= 0x007F) ||
             (displacmentValue >= 0xFF80 && displacmentValue < 0xFFFF));
-
 }

@@ -1,11 +1,11 @@
 #include "fpasm.h"
 #include <QScriptEngine>
 
-InstRet FirstPass::assemble(const QString& line) {
+InstRet_T FirstPass::assemble(const QString& line) {
     return Get().Iassemble(line);
 }
 
-std::tuple<QStringList, QList<error>> FirstPass::validate(const QStringList& param) {
+std::tuple<QStringList, QList<Error_T>> FirstPass::validate(const QStringList& param) {
     return Get().Ivalidate(param);
 }
 
@@ -25,42 +25,44 @@ void FirstPass::removeComments(QStringList &param) noexcept {
             });
 }
 
-QList<label> FirstPass::getLabels(QStringList &param) {
+/*
+ * Labels definition : .LBL:
+ * Labels calling : jmp .LBL
+ */
+QList<Error_T> FirstPass::getLabels(QStringList &param) {
     /*
      * @INLINE LABELS ARE NOT SUPPORTED, YET...OR NEVER!
-     * When a label is detected, it should be removed after calculating its address and every occurrence of it
-     * should be replaced by cs:[addr]
+     * should be replaced by cs:[addr] (!!) : maybe not! this should be resolved when implemeting the cpu
      * TODO:
-     * Till now, the function only calculates the address. After implementing jmp instruction, the rest of the functionality will be implemented.
      */
-    QList<label> ret;
+    QList<Error_T> ret;
     int bytesCount = 0;
     for (auto p : param) {
-        auto [machCode, success, errMsg] = assemble(p);
+        auto [machCode, success, ident] = assemble(p);
         bytesCount += machCode.length() / 2;
-        if(errMsg == "LBL")
-            if(isLabel(p)) {
-                ret.append(std::make_tuple(bytesCount, p));
-                p = bytesCount;
+        if(ident == "LBL") {
+            //If this label already in the labels list, this is a double definition
+            if(Labels::labelExists(p)) {
+                ret.append(std::make_tuple("Redefinition of a Label", p, 0));
+                continue;
             }
+            Labels::addLabel(bytesCount, p);
+        }
     }
     return ret;
 }
 
-std::tuple<QStringList, QList<error>> FirstPass::Ivalidate(const QStringList& code) {
+std::tuple<QStringList, QList<Error_T>> FirstPass::Ivalidate(const QStringList& code) {
 
     QRegExp negRegx("-[0-9a-fA-F]+");
     QRegExp charRegx("'.'|\".\"");
     QRegExp evalRegx("(\\w*[+-]\\w*)+");
-    QList<error> ret;
+    QList<Error_T> ret;
     int lineNumber=0;
     readyCode = code;
     removeComments(readyCode);
-    lbls = getLabels(readyCode);
 
-    for(auto [p1, p2] : lbls) {
-        qDebug() << p1 << p2 << "END\n";
-    }
+    ret = getLabels(readyCode);
 
     /*
      * @Rules :
@@ -71,7 +73,7 @@ std::tuple<QStringList, QList<error>> FirstPass::Ivalidate(const QStringList& co
     for (auto &p : readyCode) {
         ++lineNumber;
         if(p.isEmpty()) continue;
-        bool isLabel = p.endsWith(':') && p.startsWith('.');
+        bool isLabel = Labels::isLableDef(p);
 
         //Handling the negative sign by taking the tow's complement
         //to be moved to a function.
@@ -102,14 +104,11 @@ std::tuple<QStringList, QList<error>> FirstPass::Ivalidate(const QStringList& co
         auto instResult = std::find(std::begin(instructionsLUT),
                 std::end(instructionsLUT),splittedLine.first().toUpper());
 
-        QList<label>::iterator lblFindResult;
-
         if((splittedLine.count() >= 2) && (getOperandType(splittedLine.at(1)) == Label)) {
-            lblFindResult = std::find(std::begin(lbls), std::end(lbls), std::make_tuple(0, splittedLine.at(1)));
+            if(Labels::labelExists(splittedLine.at(1)) == false) {ret.append(std::make_tuple(QString("Undefined Label"), p, lineNumber)); continue;}
         }
 
         if(instResult == std::end(instructionsLUT) && !isLabel) {ret.append(std::make_tuple(QString("Unknown Instruction"), p, lineNumber)); continue;}
-        if(lblFindResult == std::end(lbls)) {ret.append(std::make_tuple(QString("Undefined Label"), p, lineNumber)); continue;}
     }
 
     return {readyCode, ret};
@@ -156,12 +155,12 @@ bool FirstPass::eval(QString& param) {
     return true;
 }
 
-InstRet FirstPass::Iassemble(const QString& param) {
+InstRet_T FirstPass::Iassemble(const QString& param) {
     std::unique_ptr<Base> b;
     QString inst = param.split(" ").at(0).toUpper();
     //Because we need to assemble to code to calculate the offset of the label.
     //we should be ok with lables defs
-    if(isLabel(inst))
+    if(Labels::isLableDef(inst))
         return {"", true, "LBL"};
 
     if(inst == "MOV") {

@@ -43,7 +43,7 @@ file(GLOB project_files
     "../assembler/include/*.h"
     "../assembler/fpasm/*.cpp"
     "../assembler/fpasm/*.h"
-#    "../resources.qrc"
+    "../resources.qrc"
     "../mainwindow.cpp"
     )
 

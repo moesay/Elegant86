@@ -27,7 +27,7 @@ InstRet_T Push::process() {
     //get the operand type. is it a reg16, reg8, mem address, segreg or what?
     OperandType destType = getOperandType(dest);
 
-    if(pointerType == Pointer::Word)
+    if(pointerType == Pointer::Word && destType != OperandType::Reg16)
         destType = OperandType::Mem16;
 
     QString generalExpression = Operands[destType];
@@ -101,3 +101,5 @@ uchar Push::getOpcode(const QString& param, bool *ok) {
 Push::Push(const QString& param) {
     this->setCodeLine(param);
 }
+
+Push::Push() {}

@@ -1,7 +1,6 @@
 #ifndef FPASM_H
 #define FPASM_H
 
-#include <QList>
 #include <assembler/include/base.h>
 #include <assembler/include/precom.h>
 #include <include/labels.h>

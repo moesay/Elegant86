@@ -14,7 +14,7 @@ std::tuple<QString, QString> Base::twoTokens() {
     QStringList list = codeLine.split(QRegExp(" "), QString::SkipEmptyParts);
     for(int i = 0; i < list.length(); i++) {
         if(list[i].toUpper() == "WPTR") {
-            if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list[i+1]) == OperandType::Immed16)
+            if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list.at(i+1)) == OperandType::Immed16)
                 throw InvalidPointer();
             pointerType = Pointer::Word;
             list.removeAt(i);

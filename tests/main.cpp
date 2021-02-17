@@ -5,6 +5,7 @@
 #include <iostream>
 #include "mov.hpp"
 #include "add.hpp"
+#include "push.hpp"
 
 int main(int argc, char *argv[])
 {

@@ -7,7 +7,7 @@
 <h3 align="center">Elegant86</h3>
 
 <p align="center">
-  A cross-platform 8086 assembler & simulator built to make assembly easier.
+  A cross-platform 8086 assembler & emulator built to make assembly easier.
   <br>
   <a href="https://github.com/moesay/elegant86/issues/new?template=bug_report.md">Report bug</a>
   ·

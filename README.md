@@ -29,7 +29,7 @@
 
 ## Why?
 
-The reason behind Elegant86 is to make Assembly much easier to learn by offering a CPU execution-visualizer that shows you exactly what happened after executing that specific instruction. But you might ask, who needs Assembly in the '20s? Assembly is here to stay. Understanding Assembly will give you a good perspective of how your project really works and how to optimize it.
+The reason behind building Elegant86 is to make Assembly much easier to learn by offering a CPU execution-visualizer that shows you exactly what happened after executing that specific instruction. But you might ask, who needs Assembly in the '20s? Assembly is here to stay. Understanding Assembly will give you a good perspective of how your project really works and how to optimize it.
 
 Elegant86 doesn't invoke another assembler to assemble your code. Elegant86 itself is an assembler. A simple in design, powerful in execution one. So you have the chance to dive into its code and see how your instructions get converted into machine code. The design simplicity made contributing to the project easier but there is a cost. Simply, Elegant86 is not optimal.
 

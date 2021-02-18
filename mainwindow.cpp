@@ -11,6 +11,7 @@ MainWindow::MainWindow()
 
 void MainWindow::initUi() {
     setWindowTitle(tr("Elegant86[*]"));
+    setWindowIcon(QIcon(":/resources/elegant86.png"));
     createActions();
     createMenus();
     createToolBars();

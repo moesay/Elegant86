@@ -15,5 +15,7 @@
         <file>resources/stepOut.png</file>
         <file>resources/kill.png</file>
         <file>resources/undo.png</file>
+        <file>resources/elegant86.ico</file>
+        <file>resources/elegant86.png</file>
     </qresource>
 </RCC>

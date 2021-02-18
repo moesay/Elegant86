@@ -125,4 +125,4 @@ There are no contributing guidelines for Elegant86 (so far). Feel free to fork t
 Code copyright 2019–2021 the [Elegant86 Author](https://github.com/moesay). Code released under the [GNU General Public License](https://github.com/moesay/elegant86/blob/master/LICENSE).
 
 
-Elegant86 icon copyright 2010-2021 [Freepik Company S.L.](https://www.freepik.com/)
+Elegant86 icon copyright 2010–2021 [Freepik Company S.L.](https://www.freepik.com/)

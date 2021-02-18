@@ -119,6 +119,8 @@ Elegant86 hasn't been documented yet. This section will be updated once the docu
 
 There are no contributing guidelines for Elegant86 (so far). Feel free to fork the repo and help releasing Elegant86 faster.
 
+**Note:** Instructions implementations won't be pulled to the repository without a successful unit test. Elegant86 uses `gtest` for testing. Consider writing the proper unit test for your implementation.
+
 
 ## Copyright and license
 

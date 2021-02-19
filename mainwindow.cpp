@@ -145,6 +145,7 @@ void MainWindow::run() {
     simulateWidget->resetUi();
     tabWidget->setCurrentIndex(1);
     Labels::clearAll();
+    int lineNo = 0;
 
     QStringList code = editorWidget->codeEditor->toPlainText().split('\n');
     auto [processedCode, errors] = FirstPhase::validate(code);
@@ -157,11 +158,12 @@ void MainWindow::run() {
     }
 
     for(const auto &line : std::as_const(processedCode)) {
+        lineNo++;
         if(line.isEmpty()) continue;
         auto [machCode, success, errMsg] = FirstPhase::assemble(line);
         if(!success) {
             simulateWidget->resetUi();
-            simulateWidget->insertLog(errMsg);
+            simulateWidget->insertLog(fmt_err(Error_T(errMsg, line, lineNo)));
             Labels::clearAll();
             return;
         }

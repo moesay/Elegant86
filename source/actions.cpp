@@ -23,7 +23,7 @@ void MainWindow::createMenus() {
     editMenu->addAction(findAction);
     editMenu->addAction(findAndReplaceAction);
 
-    SimulateMenu = menuBar()->addMenu(tr("&Simulate"));
+    SimulateMenu = menuBar()->addMenu(tr("E&mulate"));
     SimulateMenu->addAction(runAction);
     SimulateMenu->addAction(pauseAction);
     SimulateMenu->addAction(continueAction);
@@ -98,12 +98,12 @@ void MainWindow::createActions() {
     findAndReplaceAction = new QAction(tr("Find And Replace"), this);
     connect(findAndReplaceAction, SIGNAL(triggered()), this, SLOT(findAndReplace()));
 
-    runAction = new QAction(tr("Run Simulation"));
+    runAction = new QAction(tr("Run Emulation"));
     runAction->setShortcut(tr("F5"));
     runAction->setIcon(QIcon(":/resources/run.png"));
     connect(runAction, SIGNAL(triggered()), this, SLOT(run()));
 
-    pauseAction = new QAction(tr("Pause Simulation"), this);
+    pauseAction = new QAction(tr("Pause Emulation"), this);
     pauseAction->setIcon(QIcon(":/resources/pause.png"));
     connect(pauseAction, SIGNAL(triggered()), this, SLOT(pause()));
 
@@ -117,11 +117,11 @@ void MainWindow::createActions() {
     stepOutAction->setIcon(QIcon(":/resources/stepOut.png"));
     connect(stepOutAction, SIGNAL(triggered()), this, SLOT(stepOut()));
 
-    continueAction = new QAction(tr("Continue Simulation"), this);
+    continueAction = new QAction(tr("Continue Emulation"), this);
     continueAction->setIcon(QIcon(":/resources/continue.png"));
     connect(continueAction, SIGNAL(triggered()), this, SLOT(Continue()));
 
-    killAction = new QAction(tr("Kill Simulation"), this);
+    killAction = new QAction(tr("Kill Emulation"), this);
     killAction->setIcon(QIcon(":/resources/kill.png"));
     connect(killAction, SIGNAL(triggered()), this, SLOT(kill()));
 

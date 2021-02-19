@@ -12,7 +12,7 @@ Highliter::Highliter(QTextDocument *parent) : QSyntaxHighlighter(parent) {
     mnemonicsFmt.setForeground(Qt::blue);
     mnemonicsFmt.setFontItalic(true);
     const QString mnemonics[] { "\\bmov\\b",
-        "\\badd\\b", "\\bush\\b", "\\bpop\\b", "\\bxchg\\b", "\\bin\\b", "\\bout\\b", "\\badc\\b",
+        "\\badd\\b", "\\bpush\\b", "\\bpop\\b", "\\bxchg\\b", "\\bin\\b", "\\bout\\b", "\\badc\\b",
         "\\binc\\b", "\\bsub\\b", "\\bsbb\\b", "\\bdec\\b", "\\bneg\\b", "\\bcmp\\b", "\\baas\\b",
         "\\bdas\\b", "\\bmul\\b", "\\bimul\\b", "\\baam\\b", "\\bdiv\\b", "\\bidiv\\b", "\\baad\\b",
         "\\bcbw\\b", "\\bcwd\\b", "\\bnot\\b", "\\bshl\\b", "\\bsal\\b", "\\bshr\\b", "\\bsar\\b",

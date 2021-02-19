@@ -21,7 +21,7 @@ void MainWindow::initUi() {
     editorWidget = new Editor(this);
     simulateWidget = new Simulate(this);
     tabWidget->addTab(editorWidget, tr("Code Editor"));
-    tabWidget->addTab(simulateWidget, tr("Simulator"));
+    tabWidget->addTab(simulateWidget, tr("Emulator"));
     setCentralWidget(tabWidget);
     setFileStatus(FileStatus::NewFile);
 
@@ -57,7 +57,7 @@ void MainWindow::createToolBars() {
     fileToolBar->addAction(openAction);
     fileToolBar->addAction(saveAction);
 
-    simulateToolBar = addToolBar(tr("&Simulate"));
+    simulateToolBar = addToolBar(tr("E&mulate"));
     simulateToolBar->addAction(runAction);
     simulateToolBar->addAction(killAction);
     simulateToolBar->addAction(pauseAction);

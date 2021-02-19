@@ -30,21 +30,24 @@ std::tuple<QString, QString> Base::twoTokens() {
     return {list.at(0), list.at(1)};
 }
 
-//A seg fault when a wptr is found at the end of the line, fix it later.
 std::tuple<QString, QString, QString> Base::threeTokens() {
     pointerType = Pointer::None;
     codeLine.replace("WPTR", "WPTR ", Qt::CaseSensitivity::CaseInsensitive);
     codeLine.replace("BPTR", "BPTR ", Qt::CaseSensitivity::CaseInsensitive);
     QStringList list = codeLine.split(QRegExp(" |\\,"), QString::SkipEmptyParts);
+
+    if(list.at(list.length()-1) == "WPTR" || list.at(list.length()-1) == "BPTR")
+        throw InvalidPointer();
+
     for(int i = 0; i < list.length(); i++) {
-        if(list[i].toUpper() == "WPTR") {
-            if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list[i+1]) == OperandType::Immed16)
+        if(list.at(i).toUpper() == "WPTR") {
+            if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list.at(i+1)) == OperandType::Immed16)
                 throw InvalidPointer();
             pointerType = Pointer::Word;
             list.removeAt(i);
         }
-        else if(list[i].toUpper() == "BPTR") {
-            if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list[i+1]) == OperandType::Immed16)
+        else if(list.at(i).toUpper() == "BPTR") {
+            if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list.at(i+1)) == OperandType::Immed16)
                 throw InvalidPointer();
             pointerType = Pointer::Byte;
             list.removeAt(i);
@@ -100,7 +103,6 @@ enum OperandType Base::getOperandType(const QString& operand) {
     else if(Regs16.contains(strippedOperand.trimmed().toUpper())) return OperandType::Reg16;
     else if(SegRegs.contains(strippedOperand.trimmed().toUpper())) return OperandType::SegReg;
     else if(isMemAddr(strippedOperand)) return OperandType::MemAddr;
-    //TBF, remove the const cast and add buf variable.
     else if(Labels::labelExists(strippedOperand)) return OperandType::Label;
     else if(isImmed8(strippedOperand)) return (strippedOperand.toInt(nullptr, 16) >= 0 ? OperandType::Immed8 : OperandType::NegImmed8);
     else if(isImmed16(strippedOperand)) return (strippedOperand.toInt(nullptr, 16) >= 0? OperandType::Immed16 : OperandType::NegImmed16);

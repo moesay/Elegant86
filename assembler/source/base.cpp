@@ -12,6 +12,10 @@ std::tuple<QString, QString> Base::twoTokens() {
     codeLine.replace("BPTR", "BPTR ", Qt::CaseSensitivity::CaseInsensitive);
 
     QStringList list = codeLine.split(QRegExp(" "), QString::SkipEmptyParts);
+
+    if(list.at(list.length()-1) == "WPTR" || list.at(list.length()-1) == "BPTR")
+        throw InvalidPointer();
+
     for(int i = 0; i < list.length(); i++) {
         if(list[i].toUpper() == "WPTR") {
             if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list.at(i+1)) == OperandType::Immed16)

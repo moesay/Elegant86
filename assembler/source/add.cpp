@@ -10,13 +10,15 @@ InstRet_T Add::process() {
     uchar opcode;
     uchar reg;
 
+    std::tuple<QString, QString, QString> temp;
+
     try {
-        threeTokens();
+        temp = threeTokens();
     }
     catch(const char* ex) {
         return {"", false, ex};
     }
-    auto [mnemonic, dest, src] = threeTokens();
+    auto [mnemonic, dest, src] = temp;
 
     try {
     segmentPrefixWrapper(dest, src, machineCode);

@@ -2,6 +2,7 @@
 #define FPASM_H
 
 #include <assembler/include/base.h>
+#include <optional>
 #include <assembler/include/precom.h>
 #include <include/labels.h>
 
@@ -44,7 +45,7 @@ class FirstPhase : public Base {
         InstRet_T Iassemble(const QString&);
         void negativeSignProcess(QStringList&);
         void removeComments(QStringList&) noexcept;
-        bool eval(QString&);
+        std::optional<QString> eval(QString);
 };
 
 #endif

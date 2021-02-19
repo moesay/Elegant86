@@ -74,22 +74,23 @@ std::tuple<QStringList, QList<Error_T>> FirstPhase::Ivalidate(const QStringList&
         if(p.isEmpty()) continue;
         bool isLabel = Labels::isLableDef(p);
 
+        int pos = 0;
+        while((pos = evalRegx.indexIn(p, pos)) != -1) {
+            QString temp = evalRegx.cap(0);
+            std::optional<QString> evaluatedExp = eval(temp);
+            if(evaluatedExp != std::nullopt)
+                p.replace(pos, evalRegx.matchedLength(), *evaluatedExp);
+            pos+=evalRegx.matchedLength();
+        }
+        pos ^= pos;
         //Handling the negative sign by taking the tow's complement
         //to be moved to a function.
-        int pos = 0;
         while((pos = negRegx.indexIn(p, pos)) != -1) {
             if(p.at(pos-1) != ' ' && p.at(pos-negRegx.matchedLength()-1) != ',')
                 p.replace(pos, negRegx.matchedLength(), "+"+signHandler(negRegx.cap(0), getOperandType(negRegx.cap(0))));
             else
                 p.replace(pos, negRegx.matchedLength(), signHandler(negRegx.cap(0), getOperandType(negRegx.cap(0))));
             pos+=negRegx.matchedLength();
-        }
-        pos ^= pos;
-        while((pos = evalRegx.indexIn(p, pos)) != -1) {
-            QString temp = evalRegx.cap(0);
-            if(eval(temp))
-                p.replace(pos, evalRegx.matchedLength(), temp);
-            pos+=evalRegx.matchedLength();
         }
         pos ^= pos;
         while((pos = charRegx.indexIn(p, pos)) != -1) {
@@ -113,8 +114,9 @@ std::tuple<QStringList, QList<Error_T>> FirstPhase::Ivalidate(const QStringList&
     return {readyCode, ret};
 }
 
-bool FirstPhase::eval(QString& param) {
-    QString bufS = param;
+std::optional<QString> FirstPhase::eval(QString param) {
+
+    param = "0x0+"+param;
 
     QStringList buf;
     QScriptEngine engine;
@@ -141,17 +143,19 @@ bool FirstPhase::eval(QString& param) {
     if(param.contains("--")) param.remove("--");
 
     param = engine.evaluate(param).toString();
-    if(engine.hasUncaughtException()) {
-        param = bufS;
-        return false;
-    }
+
+    if(engine.hasUncaughtException())
+        return std::nullopt;
+
     ret = hexToStr(param.toInt(), OutputSize::Dynamic, Sign::Neg);
+
     param="";
-    for(const auto &reg : buf) {
+
+    for(const auto &reg : buf)
         param+=reg+"+";
-    }
+
     param.append(ret);
-    return true;
+    return param;
 }
 
 InstRet_T FirstPhase::Iassemble(const QString& param) {

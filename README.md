@@ -20,7 +20,7 @@
       <a href="https://github.com/moesay/Elegant86/" alt="Status">
         <img src="https://img.shields.io/badge/Status-WIP-f10" /></a>
       <a href="https://github.com/moesay/Elegant86/" alt="Dev Status">
-        <img src="https://img.shields.io/badge/Developing-Active-f4f1" /></a>
+        <img src="https://img.shields.io/badge/Developing-Active-green" /></a>
       <a href="https://github.com/moesay/Elegant86/" alt="Repo Size">
         <img src="https://img.shields.io/github/repo-size/moesay/elegant86?label=Repository%20size" /></a>
       <a href="https://github.com/moesay/Elegant86/issues/" alt="Issues">

@@ -1,4 +1,4 @@
-#ifndef EXC_C
+#ifndef EXC_H
 #define EXC_H
 #include <exception>
 

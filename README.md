@@ -14,6 +14,22 @@
   <a href="https://github.com/moesay/elegant86/issues/new?template=feature_request.md">Request feature</a>
 </p>
 
+<p align="center">
+      <a href="https://github.com/moesay/Elegant86/blob/master/LICENSE" alt="License">
+        <img src="https://img.shields.io/github/license/moesay/elegant86" /></a>
+      <a href="" alt="Status">
+        <img src="https://img.shields.io/badge/Status-WIP-f10" /></a>
+      <a href="" alt="Dev Status">
+        <img src="https://img.shields.io/badge/Developing-Active-f4f1" /></a>
+      <a href="" alt="Repo Size">
+        <img src="https://img.shields.io/github/repo-size/moesay/elegant86?label=Repository%20size" /></a>
+      <a href="" alt="Issues">
+        <img src="https://img.shields.io/github/issues/moesay/elegant86" /></a>
+      <a href="" alt="PRs">
+        <img src="https://img.shields.io/github/issues-pr/moesay/elegant86" /></a>
+ </p>
+
+
 ## Table of contents
 
 - [Why?](#why)

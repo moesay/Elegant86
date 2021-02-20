@@ -23,9 +23,9 @@
         <img src="https://img.shields.io/badge/Developing-Active-f4f1" /></a>
       <a href="https://github.com/moesay/Elegant86/" alt="Repo Size">
         <img src="https://img.shields.io/github/repo-size/moesay/elegant86?label=Repository%20size" /></a>
-      <a href="https://github.com/moesay/Elegant86/" alt="Issues">
+      <a href="https://github.com/moesay/Elegant86/issues/" alt="Issues">
         <img src="https://img.shields.io/github/issues/moesay/elegant86" /></a>
-      <a href="https://github.com/moesay/Elegant86/" alt="PRs">
+      <a href="https://github.com/moesay/Elegant86/pulls/" alt="PRs">
         <img src="https://img.shields.io/github/issues-pr/moesay/elegant86" /></a>
  </p>
 

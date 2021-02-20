@@ -17,14 +17,14 @@ std::tuple<QString, QString> Base::twoTokens() {
         throw InvalidPointer();
 
     for(int i = 0; i < list.length(); i++) {
-        if(list[i].toUpper() == "WPTR") {
+        if(list.at(i).toUpper() == "WPTR") {
             if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list.at(i+1)) == OperandType::Immed16)
                 throw InvalidPointer();
             pointerType = Pointer::Word;
             list.removeAt(i);
         }
-        else if(list[i].toUpper() == "BPTR") {
-            if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list[i+1]) == OperandType::Immed16)
+        else if(list.at(i).toUpper() == "BPTR") {
+            if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list.at(i+1)) == OperandType::Immed16)
                 throw InvalidPointer();
             pointerType = Pointer::Byte;
             list.removeAt(i);
@@ -58,7 +58,7 @@ std::tuple<QString, QString, QString> Base::threeTokens() {
         }
     }
     assert(list.count() >= 3);
-    return {list[0].toUpper(), list[1].toUpper(), list[2].toUpper()};
+    return {list.at(0).toUpper(), list.at(1).toUpper(), list.at(2).toUpper()};
 }
 
 bool Base::hasSegmentPrefix(const QString& param) {

@@ -55,20 +55,6 @@ QString hexToStr (const std::integral auto &param, OutputSize opSize = OutputSiz
         }
     }
 
-    /* if ((param > 0x7F) && (param < 0xFF80) && (ht==HexType::Address && ss.str().length() != 4) && (param != 0xFF)) { */
-    /*     ss.seekg(0); */
-    /*     sign == Sign::Pos ? ss << "00" : ss << "FF"; */
-    /* } */
-
-    //the direct address has to be two bytes.
-    /* if(ht == HexType::DirectAddress) { */
-    /*     ss.seekg(0); */
-    /*     if(sign == Sign::Pos) */
-    /*         while(ss.str().length() < 4) ss << "0"; */
-    /*     else */
-    /*         while(ss.str().length() < 4) ss << "F"; */
-    /* } */
-
     if(opSize != OutputSize::Dynamic) {
         if(opSize == OutputSize::Byte) {
             if(sign == Sign::Pos)
@@ -148,7 +134,6 @@ class Base {
         bool isChar(const QString&);
         void hexValidator(QStringList&);
         bool isImmed16(const QString&);
-        Base& get();                    //What is this!
         bool isHexValue(const QString&);
         QString extractDisplacment(const QString&, bool *ok = nullptr);
         QString stripSegmentPrefix(const QString&);

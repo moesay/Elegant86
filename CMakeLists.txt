@@ -49,8 +49,7 @@ endif()
 
 set(CMAKE_BUILD_TYPE Debug)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
-find_package(Qt5 COMPONENTS Script REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Script REQUIRED)
 
 add_executable(Elegant86 ${project_files})
 

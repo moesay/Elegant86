@@ -19,10 +19,10 @@
         <img src="https://img.shields.io/github/license/moesay/elegant86" /></a>
       <a href="https://github.com/moesay/Elegant86/" alt="Status">
         <img src="https://img.shields.io/badge/Status-WIP-f10" /></a>
-        <a href="https://github.com/moesay/Elegant86/actions/workflows/build.yml" alt="Status">
-        <img src="https://github.com/moesay/Elegant86/actions/workflows/build.yml/badge.svg" /></a>
       <a href="https://github.com/moesay/Elegant86/" alt="Dev Status">
         <img src="https://img.shields.io/badge/Developing-Active-green" /></a>
+          <a href="https://github.com/moesay/Elegant86/actions/workflows/build.yml" alt="Status">
+        <img src="https://github.com/moesay/Elegant86/actions/workflows/build.yml/badge.svg" /></a>
       <a href="https://github.com/moesay/Elegant86/" alt="Repo Size">
         <img src="https://img.shields.io/github/repo-size/moesay/elegant86?label=Repository%20size" /></a>
       <a href="https://github.com/moesay/Elegant86/issues/" alt="Issues">

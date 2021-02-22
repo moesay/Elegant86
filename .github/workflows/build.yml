@@ -20,6 +20,7 @@ jobs:
       uses: jurplel/install-qt-action@v2
       with:
         version: 5.14.2
+        modules: 'qtscript'
         
     - run: sudo apt-get install qtscript5-dev
     - name: Create Build Environment

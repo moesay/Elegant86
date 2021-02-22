@@ -13,8 +13,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Installing G++-10
     - run: sudo apt-get install g++-10
     
+    - name: Installing GTest
+    - run: sudo apt-get install libgtest-dev 
     
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
@@ -22,7 +25,6 @@ jobs:
         version: 5.14.2
         modules: 'qtscript'
         
-    - run: sudo apt-get install qtscript5-dev
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/build
 

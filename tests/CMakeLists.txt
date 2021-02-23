@@ -43,20 +43,15 @@ file(GLOB project_files
     "../assembler/include/*.h"
     "../assembler/fpasm/*.cpp"
     "../assembler/fpasm/*.h"
-    #"../resources.qrc"
     "../mainwindow.cpp"
     )
-
-if(CMAKE_VERSION VERSION_LESS "3.7.0")
-    set(CMAKE_INCLUDE_CURRENT_DIR ON)
-endif()
 
 find_package(GTest REQUIRED)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt5 COMPONENTS Script REQUIRED)
 
 add_executable(Test ${project_files})
-add_test(EleTest Test)
+gtest_discover_tests(Test)
 
 set_property(TARGET Test PROPERTY CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

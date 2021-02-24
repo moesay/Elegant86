@@ -110,7 +110,7 @@ enum OperandType Base::getOperandType(const QString& operand) {
     else if(Labels::labelExists(strippedOperand)) return OperandType::Label;
     else if(isImmed8(strippedOperand)) return (strippedOperand.toInt(nullptr, 16) >= 0 ? OperandType::Immed8 : OperandType::NegImmed8);
     else if(isImmed16(strippedOperand)) return (strippedOperand.toInt(nullptr, 16) >= 0? OperandType::Immed16 : OperandType::NegImmed16);
-    return OperandType::Unknown;
+    return OperandType::Invalid;
 }
 
 uchar Base::rmGenerator(const QString& param) {

@@ -1,3 +1,3 @@
-#include "stack.h"
+#include <include/stack.h>
 
 Stack::Stack() {}

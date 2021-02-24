@@ -1,4 +1,4 @@
-#include "Simulate.h"
+#include <include/Simulate.h>
 
 Simulate::Simulate(QWidget *parent) : QWidget(parent) {
     setupUi();

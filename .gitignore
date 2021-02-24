@@ -40,6 +40,7 @@ Makefile*
 CMakeFiles/
 Elegant86
 Elegant86_autogen/
+win-build/
 tests/Elegant86_autogen/
 CMakeCache.txt
 tests/CMakeCache.txt

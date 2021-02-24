@@ -85,7 +85,7 @@ enum OperandType : uint8_t {
     Immed8, Immed16,
     SegReg, NegImmed8,
     NegImmed16, Label,
-    NOP, Char, Indexer, Unknown
+    NOP, Char, Indexer, Invalid
 };
 
 using InstRet_T = std::tuple<QString, bool, QString>;

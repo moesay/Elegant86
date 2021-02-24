@@ -1,4 +1,4 @@
-#include "Simulate.h"
+#include <include/Simulate.h>
 
 void Simulate::addRoot(const QString& regName,
         const QString& hReg, const QString& lReg) {

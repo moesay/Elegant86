@@ -1,4 +1,4 @@
-#include <Editor.h>
+#include <include/Editor.h>
 #include "mainwindow.h"
 
 Editor::Editor(QWidget *parent) : QWidget(parent) {

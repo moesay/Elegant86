@@ -24,4 +24,4 @@ find_package(GTest REQUIRED)
 add_executable(Test ${project_files})
 gtest_discover_tests(Test)
 
-target_link_libraries(Test Qt5::Widgets Qt5::Script gtest gtest_main pthread)
+target_link_libraries(Test Qt5::Script gtest gtest_main pthread)

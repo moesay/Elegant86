@@ -1,5 +1,3 @@
-#include "mainwindow.h"
-#include <QApplication>
 #include <gtest/gtest.h>
 #include <assembler/include/precom.h>
 #include <iostream>

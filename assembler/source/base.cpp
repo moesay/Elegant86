@@ -224,26 +224,23 @@ void Base::hexValidator(QStringList& param) {
                 [this](QString const &p) {return !this->isHexValue(p);}), std::end(param));
 }
 
-QString Base::signHandler(const QString& param, const OperandType& ot) {
+std::optional<QString> Base::signHandler(const QString& param, const OperandType& ot) {
     if(ot == OperandType::NegImmed8) {
         if(abs(param.toInt(nullptr, 16)) > 0xFE) {
             uint16_t hexVal = param.toInt(nullptr, 16);
             return hexToStr(hexVal, OutputSize::Dynamic, Sign::Neg);
-            /* return QString::number(hexVal, 16).toUpper(); */
         }
         else {
             uint8_t hexVal = param.toInt(nullptr, 16);
             return hexToStr(hexVal, OutputSize::Dynamic, Sign::Neg);
-            /* return QString::number(hexVal, 16).toUpper(); */
         }
     }
     else if(ot == OperandType::NegImmed16) {
-        if(abs(param.toInt(nullptr, 16)) > 0x7FFF) return "ERROR";
+        if(abs(param.toInt(nullptr, 16)) > 0x7FFF) return std::nullopt;
         uint16_t hexVal = param.toInt(nullptr, 16);
         return hexToStr(hexVal, OutputSize::Dynamic, Sign::Neg);
-        /* return QString::number(hexVal, 16).toUpper(); */
     }
-    return "ERROR";
+    return std::nullopt;
 }
 
 /*

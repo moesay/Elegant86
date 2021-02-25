@@ -149,7 +149,7 @@ class Base {
         uchar getSegRegCode(const QString&, bool *ok = nullptr);
         uchar getSegRegPrefix(const QString&, bool *ok = nullptr);
         void setCodeLine(const QString&);
-        QString signHandler(const QString&, const OperandType&);
+        std::optional<QString> signHandler(const QString&, const OperandType&);
         bool isMod1(const int&);
         bool registerMod(const QString&);
         uchar modRegRmGenerator(const uchar&, const uchar&, const uchar&);

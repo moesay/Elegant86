@@ -87,9 +87,9 @@ std::tuple<QStringList, QList<Error_T>> FirstPhase::Ivalidate(const QStringList&
         //to be moved to a function.
         while((pos = negRegx.indexIn(p, pos)) != -1) {
             if(p.at(pos-1) != ' ' && p.at(pos-negRegx.matchedLength()-1) != ',')
-                p.replace(pos, negRegx.matchedLength(), "+"+signHandler(negRegx.cap(0), getOperandType(negRegx.cap(0))));
+                p.replace(pos, negRegx.matchedLength(), "+" + signHandler(negRegx.cap(0), getOperandType(negRegx.cap(0))).value_or(""));
             else
-                p.replace(pos, negRegx.matchedLength(), signHandler(negRegx.cap(0), getOperandType(negRegx.cap(0))));
+                p.replace(pos, negRegx.matchedLength(), signHandler(negRegx.cap(0), getOperandType(negRegx.cap(0))).value_or(""));
             pos+=negRegx.matchedLength();
         }
         pos ^= pos;

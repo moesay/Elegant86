@@ -2,4 +2,5 @@
 #include "mov.h"
 #include "add.h"
 #include "push.h"
+#include "pop.h"
 #include "assembler/fpasm/fpasm.h"

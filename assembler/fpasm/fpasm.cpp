@@ -178,5 +178,9 @@ InstRet_T FirstPhase::Iassemble(const QString& param) {
         b = std::make_unique<Push>(param);
         return b->process();
     }
+    else if(inst == "POP") {
+        b = std::make_unique<Pop>(param);
+        return b->process();
+    }
     return {"", false, "Unknown Instruction"};
 }

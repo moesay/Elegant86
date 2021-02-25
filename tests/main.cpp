@@ -4,6 +4,7 @@
 #include "mov.hpp"
 #include "add.hpp"
 #include "push.hpp"
+#include "pop.hpp"
 
 int main(int argc, char *argv[])
 {

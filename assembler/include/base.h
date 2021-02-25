@@ -7,6 +7,7 @@
 #include <tuple>
 #include <concepts>
 #include <QString>
+#include <optional>
 #include <unordered_map>
 #include <sstream>
 #include <include/exc.h>
@@ -142,8 +143,8 @@ class Base {
         enum OperandType getOperandType(const QString&);
         void segmentPrefixWrapper(QString&, QString&, QString&);
         void segmentPrefixWrapper(QString&, QString&);
-        std::tuple<QString, QString> twoTokens();
-        std::tuple<QString, QString, QString> threeTokens();
+        std::optional<std::tuple<QString, QString>> twoTokens();
+        std::optional<std::tuple<QString, QString, QString>> threeTokens();
         const QString& getCodeLine();
         uchar getSegRegCode(const QString&, bool *ok = nullptr);
         uchar getSegRegPrefix(const QString&, bool *ok = nullptr);

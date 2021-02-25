@@ -9,16 +9,12 @@ InstRet_T Push::process() {
     QString machineCode;
     uchar opcode;
 
-    std::tuple<QString, QString> temp;
+    std::optional<std::tuple<QString, QString>> temp = twoTokens();
 
-    try {
-        temp = twoTokens();
-    }
-    catch(InvalidPointer &ex) {
-        return {"", false, ex.what()};
-    }
+    if(temp == std::nullopt)
+        return {"", false, "Invalid Pointer"};
 
-    auto [mnemonic, dest] = temp;
+    auto [mnemonic, dest] = *temp;
 
     try {
         segmentPrefixWrapper(dest, machineCode);

@@ -2,7 +2,6 @@
 #define FPASM_H
 
 #include <assembler/include/base.h>
-#include <optional>
 #include <assembler/include/precom.h>
 #include <include/labels.h>
 

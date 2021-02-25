@@ -6,7 +6,7 @@ bool Base::isMemAddr(const QString &param) {
     return false;
 }
 
-std::tuple<QString, QString> Base::twoTokens() {
+std::optional<std::tuple<QString, QString>> Base::twoTokens() {
     pointerType = Pointer::None;
     codeLine.replace("WPTR", "WPTR ", Qt::CaseSensitivity::CaseInsensitive);
     codeLine.replace("BPTR", "BPTR ", Qt::CaseSensitivity::CaseInsensitive);
@@ -14,51 +14,51 @@ std::tuple<QString, QString> Base::twoTokens() {
     QStringList list = codeLine.split(QRegExp(" "), QString::SkipEmptyParts);
 
     if(list.at(list.length()-1) == "WPTR" || list.at(list.length()-1) == "BPTR")
-        throw InvalidPointer();
+        return std::nullopt;
 
     for(int i = 0; i < list.length(); i++) {
         if(list.at(i).toUpper() == "WPTR") {
             if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list.at(i+1)) == OperandType::Immed16)
-                throw InvalidPointer();
+                return std::nullopt;
             pointerType = Pointer::Word;
             list.removeAt(i);
         }
         else if(list.at(i).toUpper() == "BPTR") {
             if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list.at(i+1)) == OperandType::Immed16)
-                throw InvalidPointer();
+                return std::nullopt;
             pointerType = Pointer::Byte;
             list.removeAt(i);
         }
     }
     assert(list.count() >= 2);
-    return {list.at(0), list.at(1)};
+    return std::make_tuple(list.at(0), list.at(1));
 }
 
-std::tuple<QString, QString, QString> Base::threeTokens() {
+std::optional<std::tuple<QString, QString, QString>> Base::threeTokens() {
     pointerType = Pointer::None;
     codeLine.replace("WPTR", "WPTR ", Qt::CaseSensitivity::CaseInsensitive);
     codeLine.replace("BPTR", "BPTR ", Qt::CaseSensitivity::CaseInsensitive);
     QStringList list = codeLine.split(QRegExp(" |\\,"), QString::SkipEmptyParts);
 
     if(list.at(list.length()-1) == "WPTR" || list.at(list.length()-1) == "BPTR")
-        throw InvalidPointer();
+        return std::nullopt;
 
     for(int i = 0; i < list.length(); i++) {
         if(list.at(i).toUpper() == "WPTR") {
             if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list.at(i+1)) == OperandType::Immed16)
-                throw InvalidPointer();
+                return std::nullopt;
             pointerType = Pointer::Word;
             list.removeAt(i);
         }
         else if(list.at(i).toUpper() == "BPTR") {
             if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list.at(i+1)) == OperandType::Immed16)
-                throw InvalidPointer();
+                return std::nullopt;
             pointerType = Pointer::Byte;
             list.removeAt(i);
         }
     }
     assert(list.count() >= 3);
-    return {list.at(0).toUpper(), list.at(1).toUpper(), list.at(2).toUpper()};
+    return std::make_tuple(list.at(0).toUpper(), list.at(1).toUpper(), list.at(2).toUpper());
 }
 
 bool Base::hasSegmentPrefix(const QString& param) {

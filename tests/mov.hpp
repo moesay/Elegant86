@@ -14,7 +14,7 @@ struct MovFixture : testing::Test {
 
 TEST_F(MovFixture, UTILS) {
     SET("mov bptr [bx+11], 44");
-    auto [v1, v2, v3] = b->threeTokens();
+    auto [v1, v2, v3] = b->threeTokens().value_or(std::make_tuple("", "", ""));
     EXPECT_STRCASEEQ(v1.toStdString().c_str(), "mov");
     EXPECT_STRCASEEQ(v2.toStdString().c_str(), "[bx+11]");
     EXPECT_STREQ(v3.toStdString().c_str(), "44");

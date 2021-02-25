@@ -10,15 +10,11 @@ InstRet_T Add::process() {
     uchar opcode;
     uchar reg;
 
-    std::tuple<QString, QString, QString> temp;
+    std::optional<std::tuple<QString, QString, QString>> temp = threeTokens();
 
-    try {
-        temp = threeTokens();
-    }
-    catch(const char* ex) {
-        return {"", false, ex};
-    }
-    auto [mnemonic, dest, src] = temp;
+    if(temp == std::nullopt)
+        return {"", false, "Invalid Pointer"};
+    auto [mnemonic, dest, src] = *temp;
 
     try {
     segmentPrefixWrapper(dest, src, machineCode);

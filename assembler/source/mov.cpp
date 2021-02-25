@@ -17,14 +17,11 @@ InstRet_T Mov::process() {
     QString machineCode;
     uchar opcode;
 
-    std::tuple<QString, QString, QString> temp;
+    std::optional<std::tuple<QString, QString, QString>> temp = threeTokens();
 
-    try {
-        temp = threeTokens();
-    } catch(InvalidPointer& exc) {
-        return {"", false, exc.what()};
-    }
-    auto [mnemonic, dest, src] = temp;
+    if(temp == std::nullopt)
+        return {"", false, "Invalid Pointer"};
+    auto [mnemonic, dest, src] = *temp;
 
     try {
         /*

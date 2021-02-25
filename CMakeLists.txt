@@ -54,6 +54,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 target_link_libraries(Elegant86 Qt5::Widgets Qt5::Script)
 
 #Testing setup
-
-enable_testing()
-add_subdirectory(tests)
+if(UNIX)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

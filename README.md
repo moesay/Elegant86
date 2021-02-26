@@ -37,7 +37,6 @@
 - [Quick start](#quick-start)
   - [Linux](#linux)
   - [Windows](#windows)
-- [Project Structure](#project-structure)
 - [Bugs and feature requests](#bugs-and-feature-requests)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
@@ -61,65 +60,15 @@ To build Elegant86 you need `git`, `qt5`, `g++ >= 10` or `clang++ >= 10`, `cmake
 3. `mkdir build && cd build`
 4. `cmake ..`
 
-If `g++-10` isn't detected by cmake, use `cmake -DCMAKE_CXX_COMPILER=/path/to/g++-10`. By default its `-DCMAKE_CXX_COMPILER=/usr/bin/g++-10` 
+If `g++-10` isn't detected by cmake, use `cmake -DCMAKE_CXX_COMPILER=/path/to/g++-10`.
+
+By default its `-DCMAKE_CXX_COMPILER=/usr/bin/g++-10` 
 
 5. `make Elegant86`
 
 #### Windows
 
 Elegant86 hasn't been guranteed to compile with Windows compilers. This section will be updated after testing.
-
-
-## Project Structure
-
-```text
-elegant86/
-├── assembler/
-└───── fpasm/
-│       ├── fpasm.cpp
-│       └── fpasm.h
-└───── include/
-│       ├── add.h
-│       ├── base.h
-│       ├── mov.h
-│       ├── precom.h
-│       └── push.h
-└───── source/
-│       ├── add.cpp
-│       ├── base.cpp
-│       ├── mov.cpp
-│       └── push.cpp
-├── codeEditor/
-└───── include/
-│       ├── codeEditor.h
-│       ├── highlighter.h
-│       └── linenumber.h
-└───── source/
-│       ├── codeEditor.cpp
-│       ├── highlighter.cpp
-│       └── linenumber.cpp
-├── include/
-│  ├── console.h
-│  ├── Editor.h
-│  ├── exc.h
-│  ├── labels.h
-│  ├── ports.h
-│  ├── Simulate.h
-│  ├── stack.h
-│  ├── utils.h
-│  └── variabels.h
-├── source/
-│  ├── console.cpp
-│  ├── Editor.cpp
-│  ├── exc.cpp
-│  ├── labels.cpp
-│  ├── ports.cpp
-│  ├── Simulate.cpp
-│  ├── stack.cpp
-│  ├── utils.cpp
-│  └── variabels.cpp
-└──
-```
 
 
 ## Bugs and feature requests

@@ -55,16 +55,20 @@ Elegant86 doesn't invoke another assembler to assemble your code. Elegant86 itse
 #### Linux
 
 To build Elegant86 you need `git`, `qt5`, `g++ >= 10` or `clang++ >= 10`, `cmake`, `make`.
-1. `git clone https://github.com/moesay/elegant86`
-2. `cd elegant86`
-3. `mkdir build && cd build`
-4. `cmake ..`
+
+
+```
+$ git clone git@github.com:moesay/Elegant86.git
+$ cd elegant86
+$ mkdir build && cd build
+$ cmake ..
+$ make Elegant86
+```
 
 If `g++-10` isn't detected by cmake, use `cmake -DCMAKE_CXX_COMPILER=/path/to/g++-10`.
 
 By default its `-DCMAKE_CXX_COMPILER=/usr/bin/g++-10` 
 
-5. `make Elegant86`
 
 #### Windows
 

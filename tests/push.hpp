@@ -13,63 +13,43 @@ struct PushFixture : testing::Test {
 };
 
 TEST_F(PushFixture, SegRegs) {
-    SET("push ES");
-    T("06");
 
-    SET("push cs");
-    T("0E");
-
-    SET("pUsH ss");
-    T("16");
-
-    SET("push dS");
-    T("1E");
+    strVec code {
+    "push ES",
+    "push cs",
+    "pUsH ss",
+    "push dS",
+    };
+    PERFORM_TEST;
 }
 
 TEST_F(PushFixture, GpRegs) {
-    SET("push aX");
-    T("50");
-
-    SET("push bx");
-    T("53");
-
-    SET("push cx");
-    T("51");
-
-    SET("push dx");
-    T("52");
-
-    SET("push ah");
-    T("");
-
-    SET("push ch");
-    T("");
-
-    SET("push wptr ax");
-    T("50");
+    strVec code {
+    "push aX",
+    "push bx",
+    "push cx",
+    "push dx",
+    "push ah",
+    "push ch",
+    "push wptr ax",
+    };
+    PERFORM_TEST;
 }
-
 TEST_F(PushFixture, MemAddrs) {
-    SET("push wptr [ff]");
-    T("FF36FF00");
-
-    SET("push wptr [43]");
-    T("ff364300");
-
-    SET("PUSH bptr [ff]");
-    T("");
+    strVec code {
+    "push wptr [0xff]",
+    "push wptr [0x43]",
+    "PUSH bptr [0xff]",
+    };
+    PERFORM_TEST;
 }
 
 TEST_F(PushFixture, Indexers) {
-    SET("push sp");
-    T("54");
-
-    SET("push bp");
-    T("55");
-
-    SET("push si");
-    T("56");
-
-    SET("push di");
-    T("57");
+    strVec code {
+    "push sp",
+    "push bp",
+    "push si",
+    "push di",
+    };
+    PERFORM_TEST;
 }

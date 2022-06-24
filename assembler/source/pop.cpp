@@ -12,7 +12,7 @@ InstRet_T Pop::process() {
     std::optional<std::tuple<QString, QString>> temp = twoTokens();
 
     if(temp == std::nullopt)
-        return {"", false, "Invalid Pointer"};
+        return {"", false, "Invalid Pointer or operands"};
 
     auto [mnemonic, dest] = *temp;
 

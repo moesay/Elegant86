@@ -13,63 +13,43 @@ struct PopFixture : testing::Test {
 };
 
 TEST_F(PopFixture, SegRegs) {
-    SET("pop ES");
-    T("07");
-
-    SET("pop cs");
-    T("");
-
-    SET("pop ss");
-    T("17");
-
-    SET("pop dS");
-    T("1F");
+    strVec code {
+    "pop ES",
+    "pop cs",
+    "pop ss",
+    "pop dS",
+    };
+    PERFORM_TEST;
 }
 
 TEST_F(PopFixture, GpRegs) {
-    SET("pop aX");
-    T("58");
-
-    SET("pop bx");
-    T("5B");
-
-    SET("pop cx");
-    T("59");
-
-    SET("pop dx");
-    T("5A");
-
-    SET("pop ah");
-    T("");
-
-    SET("pop ch");
-    T("");
-
-    SET("pop wptr ax");
-    T("58");
+    strVec code {
+    "pop aX",
+    "pop bx",
+    "pop cx",
+    "pop dx",
+    "pop ah",
+    "pop ch",
+    "pop wptr ax",
+    };
+    PERFORM_TEST;
 }
 
 TEST_F(PopFixture, MemAddrs) {
-    SET("pop wptr [ff]");
-    T("8F06FF00");
-
-    SET("pop wptr [43]");
-    T("8F064300");
-
-    SET("pop bptr [ff]");
-    T("");
+    strVec code {
+    "pop wptr [0xff]",
+    "pop wptr [0x43]",
+    "pop bptr [0xff]",
+    };
+    PERFORM_TEST;
 }
 
 TEST_F(PopFixture, Indexers) {
-    SET("pop sp");
-    T("5C");
-
-    SET("pop bp");
-    T("5D");
-
-    SET("pop si");
-    T("5E");
-
-    SET("pop di");
-    T("5F");
+    strVec code {
+    "pop sp",
+    "pop bp",
+    "pop si",
+    "pop di",
+    };
+    PERFORM_TEST;
 }

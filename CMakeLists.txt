@@ -5,6 +5,7 @@ project(Elegant86 VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
     execute_process(
@@ -49,7 +50,6 @@ find_package(Qt5 COMPONENTS Widgets Script REQUIRED)
 add_executable(Elegant86 ${project_files})
 
 set_property(TARGET Elegant86 PROPERTY CXX_STANDARD 20)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 target_link_libraries(Elegant86 Qt5::Widgets Qt5::Script)
 

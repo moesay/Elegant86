@@ -17,7 +17,7 @@ InstRet_T Add::process() {
     auto [mnemonic, dest, src] = *temp;
 
     try {
-    segmentPrefixWrapper(dest, src, machineCode);
+        segmentPrefixWrapper(dest, src, machineCode);
     } catch(InvalidSegmentOverridePrefix& exc) {
         return {"", false, exc.what()};
     }

@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 #include <assembler/include/precom.h>
 #include <iostream>
+
 #include "mov.hpp"
+#include "and.hpp"
 #include "add.hpp"
 #include "push.hpp"
 #include "pop.hpp"

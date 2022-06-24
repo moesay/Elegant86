@@ -47,13 +47,11 @@ tests/CMakeCache.txt
 tests/Test
 Testing/
 tests/Test_autogen
-CTestTestfile.cmake
-tests/CTestTestfile.cmake
-cmake_install.cmake
-tests/cmake_install.cmake
+*.cmake
 *build-*
 *.qm
 *.prl
+.cache/
 
 # Qt unit tests
 target_wrapper.*

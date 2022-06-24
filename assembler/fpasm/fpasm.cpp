@@ -148,6 +148,7 @@ std::optional<QString> FirstPhase::eval(QString param) {
         return std::nullopt;
 
     ret = hexToStr(param.toInt(), OutputSize::Dynamic, Sign::Neg);
+    if(ret == 0) return "";
 
     param="";
 
@@ -180,6 +181,10 @@ InstRet_T FirstPhase::Iassemble(const QString& param) {
     }
     else if(inst == "POP") {
         b = std::make_unique<Pop>(param);
+        return b->process();
+    }
+    else if(inst == "AND") {
+        b = std::make_unique<And>(param);
         return b->process();
     }
     return {"", false, "Unknown Instruction"};

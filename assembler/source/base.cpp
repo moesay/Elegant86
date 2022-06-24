@@ -18,20 +18,20 @@ std::optional<std::tuple<QString, QString>> Base::twoTokens() {
 
     for(int i = 0; i < list.length(); i++) {
         if(list.at(i).toUpper() == "WPTR") {
-            if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list.at(i+1)) == OperandType::Immed16)
+            if(getOperandType(list.at(i+1)) != OperandType::MemAddr)
                 return std::nullopt;
             pointerType = Pointer::Word;
             list.removeAt(i);
         }
         else if(list.at(i).toUpper() == "BPTR") {
-            if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list.at(i+1)) == OperandType::Immed16)
+            if(getOperandType(list.at(i+1)) != OperandType::MemAddr)
                 return std::nullopt;
             pointerType = Pointer::Byte;
             list.removeAt(i);
         }
     }
-    assert(list.count() >= 2);
-    return std::make_tuple(list.at(0), list.at(1));
+    if(list.count() >= 2) return std::make_tuple(list.at(0), list.at(1));
+    else return std::nullopt;
 }
 
 std::optional<std::tuple<QString, QString, QString>> Base::threeTokens() {
@@ -151,6 +151,10 @@ bool Base::isImmed8(const QString& param) {
 
 bool Base::isImmed16(const QString& param) {
     return isHexValue(param) && (abs(param.toInt(nullptr, 16)) > 0xFF && abs(param.toInt(nullptr, 16)) <= 0xFFFF);
+}
+
+void Base::setCodeLine(const std::string& param) {
+    codeLine = QString::fromStdString(param);
 }
 
 void Base::setCodeLine(const QString& param) {

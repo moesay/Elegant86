@@ -2,13 +2,7 @@
 #include <assembler/include/add.h>
 
 InstRet_T Add::process() {
-
-    bool state = true;
-    uchar modregrm;
-    uchar mod = 0x00;
-    QString machineCode;
-    uchar opcode;
-    uchar reg;
+    machineCode.clear();
 
     std::optional<std::tuple<QString, QString, QString>> temp = threeTokens();
 
@@ -23,7 +17,7 @@ InstRet_T Add::process() {
     }
 
     //get the operand type. is it a reg16, reg8, mem address, segreg or what?
-    OperandType destType = getOperandType(dest); OperandType srcType = getOperandType(src);
+    destType = getOperandType(dest); srcType = getOperandType(src);
 
     //A generic memory type is assigned to all memory addresses. in this section, based on the
     //other operand, the memory type is gonna be assigned
@@ -43,7 +37,7 @@ InstRet_T Add::process() {
         if(pointerType != Pointer::None)
             pointerType == Pointer::Byte ? srcType = OperandType::Mem8 : srcType = OperandType::Mem16;
         else {
-            if(destType == OperandType::Reg16)
+            if(destType == OperandType::Reg16 || destType == OperandType::SegReg || destType == OperandType::Indexer) //add the indexer to the rest
                 srcType = OperandType::Mem16;
             else if(destType == OperandType::Reg8)
                 srcType = OperandType::Mem8;
@@ -58,7 +52,7 @@ InstRet_T Add::process() {
         destType = Immed16;
 
     //in the form of [destType]-[srcType]
-    QString generalExpression = Operands[destType] + '-' + Operands[srcType];
+    generalExpression = Operands[destType] + '-' + Operands[srcType];
 
     //if both the operands are of the same size
     if(((destType==OperandType::Reg16) && (srcType==OperandType::Reg16)) ||
@@ -163,6 +157,10 @@ InstRet_T Add::process() {
         } else {
             if(destType == OperandType::SegReg)
                 reg = getSegRegCode(dest);
+            else if(destType == OperandType::Indexer) {
+                reg = indexersHex.find(dest.toStdString())->second;
+                generalExpression = "REG16-MEM16";
+            }
             else
                 reg = getGpRegCode(dest, destType);
             uchar rm = rmGenerator(src);

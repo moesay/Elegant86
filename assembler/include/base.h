@@ -128,6 +128,14 @@ class Base {
         Base() = default;
         QString codeLine;
         Pointer pointerType = Pointer::None;
+        QString generalExpression;
+        bool state;
+        uchar modregrm;
+        uchar mod;
+        uchar reg;
+        QString machineCode;
+        OperandType destType, srcType;
+        uchar opcode;
     public:
         virtual InstRet_T process() = 0;
         bool isImmed8(const QString&);

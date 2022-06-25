@@ -3,6 +3,7 @@
 
 InstRet_T Mov::process() {
 
+    machineCode.clear();
     /*
      * All ::process() functions of Elegant86 works the same way
      *  1- Tokenize the ::codeLine into mnemonic, src, dest.
@@ -10,12 +11,6 @@ InstRet_T Mov::process() {
      *      so, there is no need to check for the mnemonic. This is left to be done in the main function.
      *  3- Check for the operands type, and upon that, do something.
      */
-
-    bool state = true;
-    uchar modregrm;
-    uchar mod = 0x00;
-    QString machineCode;
-    uchar opcode;
 
     std::optional<std::tuple<QString, QString, QString>> temp = threeTokens();
 
@@ -34,7 +29,7 @@ InstRet_T Mov::process() {
     }
 
     //get the operand type. is it a reg16, reg8, mem address, segreg or what?
-    OperandType destType = getOperandType(dest); OperandType srcType = getOperandType(src);
+    destType = getOperandType(dest);  srcType = getOperandType(src);
 
     /*
      * The ::getOperandType() is limited to only one input, and in many cases we need to lazy-check for the type
@@ -68,7 +63,6 @@ InstRet_T Mov::process() {
                 return {"", false, "Unknown pointer size"};
         }
     }
-
     /*
      * Its fine to use a 16bit regs as a dest when to src is an 8 bit immed. value. just extend it
      * But there's no opcode for it so here we change its type to be an immed16 and the ::hexToStr() function will extend it.
@@ -79,7 +73,7 @@ InstRet_T Mov::process() {
         destType = Immed16;
 
     //in the form of [destType]-[srcType]
-    QString generalExpression = Operands[destType] + '-' + Operands[srcType];
+    generalExpression = Operands[destType] + '-' + Operands[srcType];
 
     /*
      * When both operands are of the same type, the processing is done by fetching the opcode and

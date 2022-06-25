@@ -2,12 +2,7 @@
 #include <assembler/include/and.h>
 
 InstRet_T And::process() {
-
-    bool state = true;
-    uchar modregrm;
-    uchar mod = 0x00;
-    QString machineCode;
-    uchar opcode;
+    machineCode.clear();
 
     std::optional<std::tuple<QString, QString, QString>> temp = threeTokens();
 
@@ -21,10 +16,9 @@ InstRet_T And::process() {
         return {"", false, exc.what()};
     }
 
-    OperandType destType = getOperandType(dest); OperandType srcType = getOperandType(src);
+    destType = getOperandType(dest); srcType = getOperandType(src);
 
     if(destType == OperandType::MemAddr) {
-
         if(pointerType != Pointer::None)
             pointerType == Pointer::Byte ? destType = OperandType::Mem8 : destType = OperandType::Mem16;
         else {

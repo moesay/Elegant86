@@ -3,11 +3,7 @@
 
 InstRet_T Pop::process() {
 
-    bool state = true;
-    uchar modregrm;
-    uchar mod = 0x00;
-    QString machineCode;
-    uchar opcode;
+    machineCode.clear();
 
     std::optional<std::tuple<QString, QString>> temp = twoTokens();
 
@@ -28,7 +24,7 @@ InstRet_T Pop::process() {
     if(pointerType == Pointer::Word && destType != OperandType::Reg16)
         destType = OperandType::Mem16;
 
-    QString generalExpression = Operands[destType];
+    generalExpression = Operands[destType];
 
     if(destType == OperandType::Reg16  ||
             destType == OperandType::SegReg ||

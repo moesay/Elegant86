@@ -132,3 +132,11 @@ TEST_F(AddFixture, MEM16_IMMED16) {
     };
     PERFORM_TEST;
 }
+
+TEST_F(AddFixture, MISC) {
+    strVec code {
+        "add di, [bx]",
+        "add si, [ax]",
+    };
+    PERFORM_TEST;
+}

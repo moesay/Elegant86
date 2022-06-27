@@ -23,6 +23,7 @@ private:
         QVector<st_HighlightRule> hRulesVec;
 
         QTextCharFormat mnemonicsFmt;
+        QTextCharFormat reservedWordsFmt;
         QTextCharFormat regsFmt;
         QTextCharFormat commentsFmt;
         QTextCharFormat stringsFmt;

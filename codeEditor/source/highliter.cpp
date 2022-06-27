@@ -1,11 +1,21 @@
 #include "../include/highliter.h"
 #include <QDebug>
+#include <qnamespace.h>
 Highliter::Highliter(QTextDocument *parent) : QSyntaxHighlighter(parent) {
 
     st_HighlightRule rule;
 
+    const QString reservedWords[] {"\\bwptr\\b", "\\bbptr\\b"};
+    reservedWordsFmt.setForeground(Qt::darkBlue);
+    for(const QString &word : reservedWords) {
+        rule.format = reservedWordsFmt;
+        rule.pattern = QRegularExpression(word);
+        rule.pattern.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
+        hRulesVec.append(rule);
+    }
+
     numbersFmt.setForeground(Qt::darkCyan);
-    rule.pattern = QRegularExpression(QStringLiteral("[0-9a-fA-F]"));
+    rule.pattern = QRegularExpression(QStringLiteral("\\b[0-9a-fA-F]+\\b"));
     rule.format = numbersFmt;
     hRulesVec.append(rule);
 

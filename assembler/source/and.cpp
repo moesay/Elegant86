@@ -47,7 +47,8 @@ InstRet_T And::process() {
         srcType = Immed16;
     else if(srcType == OperandType::Mem16 && destType == OperandType::Immed8)
         destType = Immed16;
-
+    if(srcType == OperandType::Immed16 && destType == OperandType::Mem8)
+        srcType = OperandType::Immed8;
 
     QString generalExpression = Operands[destType] + '-' + Operands[srcType];
 
@@ -66,7 +67,7 @@ InstRet_T And::process() {
         if(dest=="AL") {
             opcode = getOpcode("AL-IMMED8", &state);
             machineCode.append(numToHexStr(opcode));
-            machineCode.append(numToHexStr(src.toInt(nullptr, 16)));
+            machineCode.append(numToHexStr(src));
             return {machineCode, true, ""};
         }
         else {
@@ -76,7 +77,7 @@ InstRet_T And::process() {
             machineCode.append(numToHexStr(opcode));
             //and reg8/immed8 has a fixed reg field
             machineCode.append(numToHexStr(modRegRmGenerator(0X3, 0X4, getGpRegCode(dest, destType))));
-            machineCode.append(numToHexStr(src.toInt(nullptr, 16)));
+            machineCode.append(numToHexStr(src));
             return {machineCode, true, ""};
         }
     }
@@ -85,7 +86,7 @@ InstRet_T And::process() {
         if(dest=="AX") {
             opcode = getOpcode("AX-IMMED16", &state);
             machineCode.append(numToHexStr(opcode));
-            machineCode.append(numToHexStr(src.toInt(nullptr, 16)));
+            machineCode.append(numToHexStr(src));
             return {machineCode, true, ""};
         }
         else {
@@ -94,7 +95,7 @@ InstRet_T And::process() {
             machineCode.append(numToHexStr(opcode));
             //and reg16/immed16 has a fixed reg field
             machineCode.append(numToHexStr(modRegRmGenerator(0X3, 0X4, getGpRegCode(dest, destType))));
-            machineCode.append(numToHexStr(src.toInt(nullptr, 16)));
+            machineCode.append(numToHexStr(src));
             return {machineCode, true, ""};
         }
     }
@@ -176,11 +177,11 @@ InstRet_T And::process() {
         machineCode.append(numToHexStr(opcode));
         machineCode.append(numToHexStr(modregrm));
         if(!displacment.empty())
-            machineCode.append(numToHexStr(displacment.first().toInt(0, 16), ((directAddress || mod == 0x02) ? OutputSize::Word : OutputSize::Byte)));
+            machineCode.append(numToHexStr(displacment.first(), ((directAddress || mod == 0x02) ? OutputSize::Word : OutputSize::Byte)));
         if(srcType == OperandType::Immed8)
-            machineCode.append(numToHexStr(src.toInt(nullptr, 16)));
+            machineCode.append(numToHexStr(src, OutputSize::Byte));
         else if (srcType == OperandType::Immed16)
-            machineCode.append(numToHexStr(src.toInt(nullptr, 16), OutputSize::Word));
+            machineCode.append(numToHexStr(src, OutputSize::Word));
         return {machineCode, true, ""};
     }
 

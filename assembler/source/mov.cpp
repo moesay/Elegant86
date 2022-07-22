@@ -2,7 +2,6 @@
 #include <assembler/include/mov.h>
 
 InstRet_T Mov::process() {
-
     machineCode.clear();
     /*
      * All ::process() functions of Elegant86 works the same way
@@ -12,7 +11,7 @@ InstRet_T Mov::process() {
      *  3- Check for the operands type, and upon that, do something.
      */
 
-    std::optional<std::tuple<QString, QString, QString>> temp = threeTokens();
+    std::optional<std::tuple<QString, QString, QString>> temp = tokenize();
 
     if(temp == std::nullopt)
         return {"", false, "Invalid Pointer"};
@@ -23,7 +22,7 @@ InstRet_T Mov::process() {
          * The following function handels the segment prefix overriding
          * It do so by removing the segment and inserting its opcode into ~machineCode
          */
-        segmentPrefixWrapper(dest, src, machineCode);
+        segmentPrefixWrapper(dest, src);
     } catch(InvalidSegmentOverridePrefix& exc) {
         return {"", false, exc.what()};
     }
@@ -33,7 +32,7 @@ InstRet_T Mov::process() {
 
     /*
      * The ::getOperandType() is limited to only one input, and in many cases we need to lazy-check for the type
-     * as some types are depends on the state of the other type. The memory is one of these types.
+     * as some types depends on the the other type. The memory is one of these types.
      * A generic memory type (MemAddr) is assigned to any memory address (any thing grouped in square brackets)
      * and in this function, depending on the type of the other operand, the memory length specifier and the memory length (if immed addressing is involved)
      * the memory type is altered
@@ -63,14 +62,16 @@ InstRet_T Mov::process() {
                 return {"", false, "Unknown pointer size"};
         }
     }
+
     /*
      * Its fine to use a 16bit regs as a dest when to src is an 8 bit immed. value. just extend it
-     * But there's no opcode for it so here we change its type to be an immed16 and the ::hexToStr() function will extend it.
+     * But there's no opcode for it so here we change its type to be an immed16 and the ::numToHexStr() function will extend it.
      */
     if(destType == OperandType::Mem16 && srcType == OperandType::Immed8)
         srcType = Immed16;
-    else if(srcType == OperandType::Mem16 && destType == OperandType::Immed8)
-        destType = Immed16;
+    if(srcType == OperandType::LongImmed) srcType = OperandType::Immed16;
+    if(srcType == OperandType::Immed16 && destType == OperandType::Mem8)
+        srcType = OperandType::Immed8;
 
     //in the form of [destType]-[srcType]
     generalExpression = Operands[destType] + '-' + Operands[srcType];
@@ -85,13 +86,13 @@ InstRet_T Mov::process() {
         //the opcode, and the modregrm byte
         opcode = getOpcode(generalExpression, &state);
         if(state == false) return {"", false, "Invalid Operands"};
-        machineCode.append(hexToStr(opcode));
+        machineCode.append(numToHexStr(opcode));
         /*
          * Mod is always 0x03 == 11b
          * Reg is the src register
          * RM is the dest register
          */
-        machineCode.append(hexToStr(modRegRmGenerator(0X3, getGpRegCode(src, srcType), getGpRegCode(dest, destType))));
+        machineCode.append(numToHexStr(modRegRmGenerator(0X3, getGpRegCode(src, srcType), getGpRegCode(dest, destType))));
         return {machineCode, true, ""};
     }
 
@@ -100,19 +101,19 @@ InstRet_T Mov::process() {
      * There is no general opcode that takes REG16-IMMED. So instead, we have to get to opcode using the name of the register
      * stored in ~dest
      */
-    else if(destType==OperandType::Reg8 && srcType==OperandType::Immed8) {
+    else if(destType==OperandType::Reg8 && (srcType==OperandType::Immed8 || srcType == OperandType::Immed16)) {
         opcode = getOpcode(dest+"-IMMED8", &state);
         if(state == false) return {"", false, "Invalid Operands"};
-        machineCode.append(hexToStr(opcode));
-        machineCode.append(hexToStr(src.toInt(nullptr, 16)));
+        machineCode.append(numToHexStr(opcode));
+        machineCode.append(numToHexStr(src, OutputSize::Byte));
         return {machineCode, true, ""};
     }
 
     else if(destType==OperandType::Reg16 && (srcType==OperandType::Immed16 || srcType==Immed8)){
         opcode = getOpcode(dest+"-IMMED16", &state);
         if(state == false) return {"", false, "Invalid Operands"};
-        machineCode.append(hexToStr(opcode)); //the instruction machine code, in the case its mov XX, XX is any 8 bit reg
-        machineCode.append(hexToStr(src.toInt(nullptr, 16), OutputSize::Word));
+        machineCode.append(numToHexStr(opcode)); //the instruction machine code, in the case its mov XX, XX is any 8 bit reg
+        machineCode.append(numToHexStr(QString(src), OutputSize::Word));
 
         return {machineCode, true, ""};
     }
@@ -155,7 +156,7 @@ InstRet_T Mov::process() {
 
         //If there is something in the ~displacment, then its indeed a displacment that we care about. take it out of the QStringList and store it as an int.
         if(displacment.size() >= 1)
-            displacmentValue = displacment.first().toInt(0, 16);
+            displacmentValue = displacment.first().toInt(nullptr, 16);
 
         if(displacment.empty()) mod = 0x00;         //for bx+si, bp+di ... and si, di as well
         else if(!displacment.empty()) {
@@ -170,15 +171,15 @@ InstRet_T Mov::process() {
         if((dest == "AL" || dest == "AX") && isHexValue(src)) {
             uchar opcode = getOpcode(dest +'-'+ Operands[srcType], &state);
             if(state == false) return {"", false, "Invalid Operands"};
-            machineCode.append(hexToStr(opcode));
-            machineCode.append(hexToStr(extractDisplacment(src).toInt(0, 16), OutputSize::Word));
+            machineCode.append(numToHexStr(opcode));
+            machineCode.append(numToHexStr(extractDisplacment(src), OutputSize::Word));
             return {machineCode, true, ""};
         }
         if((src == "AL" || src == "AX") && isHexValue(dest)) {
             uchar opcode = getOpcode(Operands[destType] +'-'+ src, &state);
             if(state == false) return {"", false, "Invalid Operands"};
-            machineCode.append(hexToStr(opcode));
-            machineCode.append(hexToStr(extractDisplacment(dest).toInt(0, 16), OutputSize::Word));
+            machineCode.append(numToHexStr(opcode));
+            machineCode.append(numToHexStr(extractDisplacment(dest), OutputSize::Word));
             return {machineCode, true, ""};
         }
 
@@ -220,14 +221,14 @@ InstRet_T Mov::process() {
 
         opcode = getOpcode(generalExpression, &state);
         if(state == false) return {"", false, "Invalid Operands"};
-        machineCode.append(hexToStr(opcode));
-        machineCode.append(hexToStr(modregrm));
+        machineCode.append(numToHexStr(opcode));
+        machineCode.append(numToHexStr(modregrm));
         if(!displacment.empty())
-            machineCode.append(hexToStr(displacment.first().toInt(0, 16), ((directAddress || mod == 0x02) ? OutputSize::Word : OutputSize::Byte)));
+            machineCode.append(numToHexStr(displacment.first(), ((directAddress || mod == 0x02) ? OutputSize::Word : OutputSize::Byte)));
         if(srcType == OperandType::Immed8)
-            machineCode.append(hexToStr(src.toInt(nullptr, 16)));
+            machineCode.append(numToHexStr(src, OutputSize::Byte));
         else if (srcType == OperandType::Immed16)
-            machineCode.append(hexToStr(src.toInt(nullptr, 16), OutputSize::Word));
+            machineCode.append(numToHexStr(src, OutputSize::Word));
         return {machineCode, true, ""};
     }
 
@@ -235,7 +236,7 @@ InstRet_T Mov::process() {
         opcode = getOpcode(generalExpression, &state);
         if(state == false) return {"", false, "Invalid Operands"};
         modregrm = modRegRmGenerator(0x03, getSegRegCode(src), getGpRegCode(dest, destType));
-        machineCode.append(hexToStr(opcode)); machineCode.append(hexToStr(modregrm));
+        machineCode.append(numToHexStr(opcode)); machineCode.append(numToHexStr(modregrm));
         return {machineCode, true, ""};
     }
 
@@ -243,27 +244,27 @@ InstRet_T Mov::process() {
         opcode = getOpcode(generalExpression, &state);
         if(state == false) return {"", false, "Invalid Operands"};
         modregrm = modRegRmGenerator(0x03, getSegRegCode(dest), getGpRegCode(src, srcType));
-        machineCode.append(hexToStr(opcode)); machineCode.append(hexToStr(modregrm));
+        machineCode.append(numToHexStr(opcode)); machineCode.append(numToHexStr(modregrm));
         return {machineCode, true, ""};
     }
 
     else if(destType == OperandType::Reg16 && srcType == OperandType::Indexer) {
         opcode = getOpcode("REG16-REG16", &state);
         if(state == false) return {"", false, "Invalid Operands"};
-        machineCode.append(hexToStr(opcode));
+        machineCode.append(numToHexStr(opcode));
         auto indexerCode = indexersHex.find(src.toStdString())->second;
         modregrm = modRegRmGenerator(0x3, indexerCode, getGpRegCode(dest, OperandType::Reg16));
-        machineCode.append(hexToStr(modregrm));
+        machineCode.append(numToHexStr(modregrm));
         return {machineCode, true, ""};
     }
 
     else if(destType == OperandType::Indexer && srcType == OperandType::Reg16) {
         opcode = getOpcode("REG16-REG16", &state);
         if(state == false) return {"", false, "Invalid Operands"};
-        machineCode.append(hexToStr(opcode));
+        machineCode.append(numToHexStr(opcode));
         auto indexerCode = indexersHex.find(dest.toStdString())->second;
         modregrm = modRegRmGenerator(0x3, getGpRegCode(src, OperandType::Reg16), indexerCode);
-        machineCode.append(hexToStr(modregrm));
+        machineCode.append(numToHexStr(modregrm));
         return {machineCode, true, ""};
     }
     return {"", false, "Invalid Operands"};
@@ -282,4 +283,4 @@ uchar Mov::getOpcode(const QString& param, bool *ok) {
 Mov::Mov(const QString& param) {
     this->setCodeLine(param);
 }
-Mov::Mov() {}
+Mov::Mov() {tokens = 3;}

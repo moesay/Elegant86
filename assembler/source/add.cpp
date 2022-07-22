@@ -4,14 +4,14 @@
 InstRet_T Add::process() {
     machineCode.clear();
 
-    std::optional<std::tuple<QString, QString, QString>> temp = threeTokens();
+    std::optional<std::tuple<QString, QString, QString>> temp = tokenize();
 
     if(temp == std::nullopt)
         return {"", false, "Invalid Pointer"};
     auto [mnemonic, dest, src] = *temp;
 
     try {
-        segmentPrefixWrapper(dest, src, machineCode);
+        segmentPrefixWrapper(dest, src);
     } catch(InvalidSegmentOverridePrefix& exc) {
         return {"", false, exc.what()};
     }
@@ -50,6 +50,8 @@ InstRet_T Add::process() {
         srcType = Immed16;
     else if(srcType == OperandType::Mem16 && destType == OperandType::Immed8)
         destType = Immed16;
+    if(srcType == OperandType::Immed16 && destType == OperandType::Mem8)
+        srcType = OperandType::Immed8;
 
     //in the form of [destType]-[srcType]
     generalExpression = Operands[destType] + '-' + Operands[srcType];
@@ -61,8 +63,8 @@ InstRet_T Add::process() {
         //the opcode, and the modregrm byte
         opcode = getOpcode(generalExpression, &state);
         if(state == false) return {"", false, "Invalid Operands"};
-        machineCode.append(hexToStr(opcode));
-        machineCode.append(hexToStr(modRegRmGenerator(0x3, getGpRegCode(src, srcType), getGpRegCode(dest, destType))));
+        machineCode.append(numToHexStr(opcode));
+        machineCode.append(numToHexStr(modRegRmGenerator(0x3, getGpRegCode(src, srcType), getGpRegCode(dest, destType))));
         return {machineCode, true, ""};
     }
 
@@ -70,8 +72,8 @@ InstRet_T Add::process() {
         if(dest == "AL") {
             opcode = getOpcode(dest+"-IMMED8", &state);
             if(state == false) return {"", false, "Invalid Operands"};
-            machineCode.append(hexToStr(opcode));
-            machineCode.append(hexToStr(src.toInt(nullptr, 16)));
+            machineCode.append(numToHexStr(opcode));
+            machineCode.append(numToHexStr(src));
             return {machineCode, true, ""};
         }
 
@@ -79,9 +81,9 @@ InstRet_T Add::process() {
         if(state == false) return {"", false, "Invalid Operands"};
         reg = 0X00;
         modregrm = modRegRmGenerator(0X3, reg, getGpRegCode(dest, destType));
-        machineCode.append(hexToStr(opcode));
-        machineCode.append(hexToStr(modregrm));
-        machineCode.append(hexToStr(src.toInt(nullptr, 16)));
+        machineCode.append(numToHexStr(opcode));
+        machineCode.append(numToHexStr(modregrm));
+        machineCode.append(numToHexStr(src));
         return {machineCode, true, ""};
     }
 
@@ -89,17 +91,17 @@ InstRet_T Add::process() {
         if(dest == "AX") {
             opcode = getOpcode(dest+"-IMMED16", &state);
             if(state == false) return {"", false, "Invalid Operands"};
-            machineCode.append(hexToStr(opcode));
-            machineCode.append(hexToStr(src.toInt(nullptr, 16), OutputSize::Word));
+            machineCode.append(numToHexStr(opcode));
+            machineCode.append(numToHexStr(src, OutputSize::Word));
             return {machineCode, true, ""};
         }
         opcode = getOpcode(Operands[destType]+"-IMMED16" , &state);
         if(state == false) return {"", false, "Invalid Operands"};
         reg = 0X00;
-        machineCode.append(hexToStr(opcode)); //the instruction machine code, in the case its mov XX, XX is any 8 bit reg
+        machineCode.append(numToHexStr(opcode)); //the instruction machine code, in the case its mov XX, XX is any 8 bit reg
         modregrm = modRegRmGenerator(0X3, reg, getGpRegCode(dest, destType));
-        machineCode.append(hexToStr(modregrm));
-        machineCode.append(hexToStr(src.toInt(nullptr, 16), OutputSize::Word));
+        machineCode.append(numToHexStr(modregrm));
+        machineCode.append(numToHexStr(src, OutputSize::Word));
 
         return {machineCode, true, ""};
     }
@@ -139,8 +141,8 @@ InstRet_T Add::process() {
         if((dest == "AL" || dest == "AX") && isHexValue(src) && srcType != OperandType::Mem8 && srcType != Mem16) {
             uchar opcode = getOpcode(dest +'-'+ Operands[srcType], &state);
             if(state == false) return {"", false, "Invalid Operands"};
-            machineCode.append(hexToStr(opcode));
-            machineCode.append(hexToStr(extractDisplacment(src).toInt(0, 16), OutputSize::Word));
+            machineCode.append(numToHexStr(opcode));
+            machineCode.append(numToHexStr(extractDisplacment(src), OutputSize::Word));
             return {machineCode, true, ""};
         }
 
@@ -170,14 +172,14 @@ InstRet_T Add::process() {
 
         opcode = getOpcode(generalExpression, &state);
         if(state == false) return {"", false, "Invalid Operands"};
-        machineCode.append(hexToStr(opcode));
-        machineCode.append(hexToStr(modregrm));
+        machineCode.append(numToHexStr(opcode));
+        machineCode.append(numToHexStr(modregrm));
         if(!displacment.empty())
-            machineCode.append(hexToStr(displacment.first().toInt(0, 16), ((directAddress || mod == 0x02) ? OutputSize::Word : OutputSize::Byte)));
+            machineCode.append(numToHexStr(displacment.first(), ((directAddress || mod == 0x02) ? OutputSize::Word : OutputSize::Byte)));
         if(srcType == OperandType::Immed8)
-            machineCode.append(hexToStr(src.toInt(nullptr, 16)));
+            machineCode.append(numToHexStr(src, OutputSize::Byte));
         else if (srcType == OperandType::Immed16)
-            machineCode.append(hexToStr(src.toInt(nullptr, 16), OutputSize::Word));
+            machineCode.append(numToHexStr(src, OutputSize::Word));
         return {machineCode, true, ""};
     }
 
@@ -185,7 +187,7 @@ InstRet_T Add::process() {
         opcode = getOpcode(generalExpression, &state);
         if(state == false) return {"", false, "Invalid Operands"};
         modregrm = modRegRmGenerator(0x03, getSegRegCode(src), getGpRegCode(dest, destType));
-        machineCode.append(hexToStr(opcode)); machineCode.append(hexToStr(modregrm));
+        machineCode.append(numToHexStr(opcode)); machineCode.append(numToHexStr(modregrm));
         return {machineCode, true, ""};
     }
 
@@ -193,7 +195,7 @@ InstRet_T Add::process() {
         opcode = getOpcode(generalExpression, &state);
         if(state == false) return {"", false, "Invalid Operands"};
         modregrm = modRegRmGenerator(0x03, getSegRegCode(dest), getGpRegCode(src, srcType));
-        machineCode.append(hexToStr(opcode)); machineCode.append(hexToStr(modregrm));
+        machineCode.append(numToHexStr(opcode)); machineCode.append(numToHexStr(modregrm));
         return {machineCode, true, ""};
     }
 
@@ -213,4 +215,4 @@ uchar Add::getOpcode(const QString& param, bool *ok) {
 Add::Add(const QString& param) {
     this->setCodeLine(param);
 }
-Add::Add() {}
+Add::Add() {tokens = 3;}

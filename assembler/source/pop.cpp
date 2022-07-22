@@ -5,21 +5,23 @@ InstRet_T Pop::process() {
 
     machineCode.clear();
 
-    std::optional<std::tuple<QString, QString>> temp = twoTokens();
+    std::optional<std::tuple<QString, QString, QString>> temp = tokenize();
 
     if(temp == std::nullopt)
         return {"", false, "Invalid Pointer or operands"};
 
-    auto [mnemonic, dest] = *temp;
+    auto [mnemonic, dest, src] = *temp;
 
     try {
-        segmentPrefixWrapper(dest, machineCode);
+        segmentPrefixWrapper(dest);
     } catch (InvalidSegmentOverridePrefix& exc) {
         return {"", false, exc.what()};
     }
 
     //get the operand type. is it a reg16, reg8, mem address, segreg or what?
     OperandType destType = getOperandType(dest);
+    if(destType != OperandType::MemAddr && pointerType != Pointer::None)
+        return {"", false, "Invalid Pointer or operands"};
 
     if(pointerType == Pointer::Word && destType != OperandType::Reg16)
         destType = OperandType::Mem16;
@@ -33,7 +35,7 @@ InstRet_T Pop::process() {
         opcode = getOpcode(dest, &state);
         if(state == false) return {"", false, "Invalid Operands"};
 
-        machineCode.append(hexToStr(opcode));
+        machineCode.append(numToHexStr(opcode));
         return {machineCode, true, ""};
     }
 
@@ -72,10 +74,10 @@ InstRet_T Pop::process() {
         opcode = getOpcode(generalExpression, &state);
         if(state == false) return {"", false, "Invalid Operands"};
 
-        machineCode.append(hexToStr(opcode));
-        machineCode.append(hexToStr(modregrm));
+        machineCode.append(numToHexStr(opcode));
+        machineCode.append(numToHexStr(modregrm));
         if(!displacment.empty())
-            machineCode.append(hexToStr(displacment.first().toInt(0, 16), ((directAddress || mod == 0x02) ? OutputSize::Word : OutputSize::Byte)));
+            machineCode.append(numToHexStr(displacment.first().toInt(0, 16), ((directAddress || mod == 0x02) ? OutputSize::Word : OutputSize::Byte)));
         return {machineCode, true, ""};
     }
 
@@ -96,4 +98,4 @@ Pop::Pop(const QString& param) {
     this->setCodeLine(param);
 }
 
-Pop::Pop() {}
+Pop::Pop() {tokens = 2;}

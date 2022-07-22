@@ -97,13 +97,12 @@ TEST_F(AddFixture, REG8_IMMED8) {
 
 TEST_F(AddFixture, MEM8_IMMED8) {
     strVec code {
-    /* "add bptr [0xab], 0xff32", */
-    //error, should assemble
+    "add bptr [0xab], 0xff32",
     "add bptr [0xab], 0xff",
     "add bptr [0xffff], 0x12",
     "add bptr [0x2d4b], 0x22",
     "add bptr [bx+si+0x22], 0x44",
-    "add bptr[bp+di],0x24",
+    "add bptr [bp+di],0x24",
     "add bptr [bp+si+0xf24a], 0x21",
     "add [bp+si], 0x22",
     };

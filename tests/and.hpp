@@ -96,7 +96,7 @@ TEST_F(AndFixture, MEM8_IMMED8) {
             "and bptr [0xffff], 0x12",
             "and bptr [0x2d4b], 0x22",
             "and bptr [bx+si+0x22], 0x44",
-            "and bptr[bp+di],0x24",
+            "and bptr [bp+di],0x24",
             "and bptr [bp+si+0xf24a], 0x21",
         "and [bp+si], 0x22",
         /* "and bptr [ab], 0xff32" */
@@ -154,11 +154,6 @@ TEST_F(AndFixture, IMMED) {
     "and dl, 0x23",
     "and dh, 0x1",
     "and dh, 0x23",
-    };
-    PERFORM_TEST;
-
-    return;
-    strVec illCode {
     "and al, 111",
     "and ah, 111",
     "and ch, 111",
@@ -168,6 +163,8 @@ TEST_F(AndFixture, IMMED) {
     "and dl, 111",
     "and bl, 111",
     };
+    PERFORM_TEST;
+
 }
 
 TEST_F(AndFixture, SEGMENT_OVERRIDE) {

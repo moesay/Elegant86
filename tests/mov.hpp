@@ -16,11 +16,11 @@ struct MovFixture : testing::Test {
 };
 
 TEST_F(MovFixture, UTILS) {
-    SET(std::string("mov bptr [bx+11], 44"));
-    auto [v1, v2, v3] = b->threeTokens().value_or(std::make_tuple("", "", ""));
+    SET(std::string("mov bptr [bx+11], 0x44"));
+    auto [v1, v2, v3] = b->tokenize().value_or(std::make_tuple("", "", ""));
     EXPECT_STRCASEEQ(v1.toStdString().c_str(), "mov");
     EXPECT_STRCASEEQ(v2.toStdString().c_str(), "[bx+11]");
-    EXPECT_STREQ(v3.toStdString().c_str(), "44");
+    EXPECT_STREQ(v3.toStdString().c_str(), "0X44");
 }
 
 TEST_F(MovFixture, REG8_REG8) {
@@ -79,7 +79,7 @@ TEST_F(MovFixture, REG8_MEM8) {
             "mov ch, bptr [0x1f]",
             "mov dl, [bx+0xfb]",
             "mov bl, [bx+si+0xcf]",
-            "mov al, [si+bp+0x2f]"
+            "mov al, [si+bp+0x2f]",
         "mov ah, wptr [bx+si]"
     };
     PERFORM_TEST;
@@ -103,16 +103,15 @@ TEST_F(MovFixture, REG16_MEM16) {
 
 TEST_F(MovFixture, MEM8_IMMED8) {
     strVec code {
-        "mov bptr [0xab], 0xff", //->> !!!!
+        "mov bptr [0xab], 0xff",
         "mov bptr [0xffff], 0x12",
             "mov bptr [0x2d4b], 0x22",
-            "mov [bp+si], 0x22", //->> !!!
+            "mov [bp+si], 0x22",
             "mov bptr [bx+si+0x22], 0x44",
-            "mov bptr[bp+di],0x24",
+            /* "mov bptr [bx+si+9], 0100101b", --> only supported by Elegant86*/
+            "mov bptr [bp+di],0x24",
             "mov bptr [bp+si+0xf24a], 0x21",
-            /* "mov bptr [0xab], 0xff32", */
-            //^ should assembly, displacment restrictions must be removed for addresses
-            //drop the most left byte
+            "mov bptr [0xab], 0xff32",
     };
     PERFORM_TEST;
 }
@@ -185,6 +184,7 @@ TEST_F(MovFixture, SEGREG_REG16) {
 TEST_F(MovFixture, ACCUM) {
     strVec code {
         "mov al, [0x1]",
+            "mov ax, 11",
             "mov al, [bx+si]",
             "mov al, [bx]",
             "mov al, [bx+si+0x2311]",
@@ -202,11 +202,11 @@ TEST_F(MovFixture, ACCUM) {
 
 TEST_F(MovFixture, IMMED) {
     strVec code {
-        /* "mov al, 0x111", */
-            /* "mov ah, 0x111", */
-            /* "mov bl, 0x111", */
-            /* "mov bh, 0x111", */
-            /* "mov cl, 0x111", */
+        "mov al, 0x111",
+            "mov ah, 0x111",
+            "mov bl, 0x111",
+            "mov bh, 0x111",
+            "mov cl, 0x111",
             "mov al, 0x1",
             "mov al, 0x23",
             "mov ah, 0x1",
@@ -214,18 +214,19 @@ TEST_F(MovFixture, IMMED) {
             "mov bl, 0x1",
             "mov bl, 0x23",
             "mov bh, 0x1",
-            "mov bh, 0x23",
+            "mov bh, 0x29",
             "mov cl, 0x1",
             "mov cl, 0x23",
             "mov ch, 0x1",
             "mov ch, 0x23",
-            /* "mov ch, 0x111", */
+            "mov ch, 0x111",
             "mov dl, 0x1",
             "mov dl, 0x23",
-            /* "mov dl, 0x111", */
+            "mov dl, 0x111",
             "mov dh, 0x1",
             "mov dh, 0x23",
-            /* "mov dh, 0x111" */
+            "mov dh, 0x111",
+            "mov ah, 0xabcd1123"
     };
     PERFORM_TEST;
 }
@@ -254,5 +255,10 @@ TEST_F(MovFixture, INDEXERS) {
     "mov sp, [0x11]",
     "mov sp, dx",
     };
+    PERFORM_TEST;
+}
+
+TEST_F(MovFixture, FROM_FILE) {
+    strVec code = loadAndTest("./testCode/mov.asm");
     PERFORM_TEST;
 }

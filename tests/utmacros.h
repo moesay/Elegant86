@@ -6,9 +6,24 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include <fstream>
 #define BUFFER 256
 
 using strVec = std::vector<std::string>;
+
+strVec loadAndTest(std::string path) {
+    std::ifstream fileS(path);
+    strVec code;
+    std::string temp;
+    while(std::getline(fileS, temp))
+        code.push_back(temp);
+
+    for(auto x: code)
+        std::cout << x << "\n";
+
+    fileS.close();
+    return code;
+}
 
 std::string decode (std::string machCode) {
     std::string cmd = "rasm2 -a x86.as -b 16 -d '" + machCode + "'";
@@ -51,10 +66,10 @@ std::string encode(std::string asmCode) {
     }
     return output;
 }
-
+#define ELE_OP std::get<0>(b->process()).toStdString()
 #define T(x) EXPECT_STRCASEEQ(                                                      \
         encode(                                                                     \
-                decode(std::get<0>(b->process()).toStdString())).c_str()            \
+                decode(ELE_OP)).c_str()                                             \
                 , x)                                                                \
     << "\nAssembly Code : " << b->getCodeLine().toStdString()                       \
     << "\n-----------------------------------------"

@@ -15,8 +15,18 @@ Highliter::Highliter(QTextDocument *parent) : QSyntaxHighlighter(parent) {
     }
 
     numbersFmt.setForeground(Qt::darkCyan);
-    rule.pattern = QRegularExpression(QStringLiteral("\\b[0-9a-fA-F]+\\b"));
     rule.format = numbersFmt;
+
+    rule.pattern = QRegularExpression(QStringLiteral("\\b[0][xX][0-9a-fA-F]+\\b"));
+    hRulesVec.append(rule);
+
+    rule.pattern = QRegularExpression(QStringLiteral("\\b[0-9]+\\b"));
+    hRulesVec.append(rule);
+
+    rule.pattern = QRegularExpression(QStringLiteral("\\b[0-9a-fA-F]+[hH]\\b"));
+    hRulesVec.append(rule);
+
+    rule.pattern = QRegularExpression(QStringLiteral("\\b[0-1]+[bB]\\b"));
     hRulesVec.append(rule);
 
     mnemonicsFmt.setForeground(Qt::blue);
@@ -34,7 +44,7 @@ Highliter::Highliter(QTextDocument *parent) : QSyntaxHighlighter(parent) {
         "\\bjae\\b", "\\bjnbe\\b", "\\bja\\b", "\\bjnp\\b", "\\bjpo\\b", "\\bjno\\b", "\\bret\\b", "\\bjns\\b",
         "\\bloop\\b", "\\bloopz\\b", "\\bloope\\b", "\\bloopnz\\b", "\\bloopne\\b", "\\bjcxz\\b", "\\bint\\b",
         "\\binto\\b", "\\biret\\b", "\\bclc\\b", "\\bcmc\\b", "\\bstc\\b", "\\bcld\\b", "\\bstd\\b", "\\bcli\\b",
-        "\\bsti\\b", "\\bhlt\\b", "\\bwait\\b", "\\besc\\b", "\\block\\b", "\\bsegment\\b"
+        "\\bsti\\b", "\\bhlt\\b", "\\bwait\\b", "\\besc\\b", "\\block\\b"
     };
     for (const QString &word : mnemonics) {
         rule.format = mnemonicsFmt;

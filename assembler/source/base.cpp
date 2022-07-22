@@ -1,4 +1,86 @@
 #include <assembler/include/base.h>
+#include <algorithm>
+#include <cctype>
+#include <iterator>
+#include <qnamespace.h>
+
+/*
+ * -- I/P -> Hex [with 0x prefix], O/P -> Hex Str
+ * -- I/P -> Dec, O/P -> Hex Str
+ *
+ *  A decimal conversion interface is provided to eliminate confusion.
+ */
+
+QString Base::numToHexStr (const std::integral auto &param, OutputSize opSize, Sign sign)
+{
+    std::stringstream ss;
+
+    if(sign == Sign::Pos) {
+        if(param > 0xFF) {
+            ss << std::hex << ((param & 0x00f0) >> 4);
+            ss << std::hex << ((param & 0x000f) >> 0);
+            ss << std::hex << ((param & 0xf000) >> 12);
+            ss << std::hex << ((param & 0x0f00) >> 8);
+        } else {
+            ss << std::hex << ((param & 0x00f0) >> 4);
+            ss << std::hex << ((param & 0x000f) >> 0);
+        }
+    }
+    else {
+        if(param > 0xFF) {
+            ss << std::hex << ((param & 0xf000) >> 12);
+            ss << std::hex << ((param & 0x0f00) >> 8);
+            ss << std::hex << ((param & 0x00f0) >> 4);
+            ss << std::hex << ((param & 0x000f) >> 0);
+        } else {
+            ss << std::hex << ((param & 0x00f0) >> 4);
+            ss << std::hex << ((param & 0x000f) >> 0);
+        }
+    }
+
+    if(opSize != OutputSize::Dynamic) {
+        if(opSize == OutputSize::Byte) {
+            if(sign == Sign::Pos)
+                while(ss.str().length() < 2) ss << "0";
+            else if(sign == Sign::Neg)
+                while(ss.str().length() < 2) ss << "F";
+
+            if(ss.str().size() > 2) {
+                ss.str(ss.str().substr(0, 2));
+            }
+        }
+        else if(opSize == OutputSize::Word) {
+            if(sign == Sign::Pos)
+                while(ss.str().length() < 4) ss << "0";
+            else if(sign == Sign::Neg)
+                while(ss.str().length() < 4) ss << "F";
+
+            if(ss.str().size() > 4)
+                ss.str(ss.str().substr(ss.str().size() - 4, ss.str().size()));
+        }
+    }
+
+    if (ss.str().length() % 2) {
+        if(sign == Sign::Pos)
+            return "0" + QString::fromStdString(ss.str()).toUpper();
+        else
+            return "F" + QString::fromStdString(ss.str()).toUpper();
+    }
+
+    return QString::fromStdString(ss.str()).toUpper();
+}
+
+QString Base::numToHexStr (const QString &param, OutputSize opSize, Sign sign) {
+    if(isDecValue(param))
+        return numToHexStr(param.toInt(0, 10), opSize, sign);
+    else if(isHexValue(param))
+        return numToHexStr(param.toInt(0, 16), opSize, sign);
+    else if(isBinValue(param))
+        return numToHexStr(param.chopped(1).toInt(0, 2), opSize, sign);
+
+    return "";
+}
+
 
 bool Base::isMemAddr(const QString &param) {
     if(param.startsWith('[') && param.endsWith(']'))
@@ -6,59 +88,57 @@ bool Base::isMemAddr(const QString &param) {
     return false;
 }
 
-std::optional<std::tuple<QString, QString>> Base::twoTokens() {
+std::optional<std::tuple<QString, QString, QString>> Base::tokenize() {
     pointerType = Pointer::None;
-    codeLine.replace("WPTR", "WPTR ", Qt::CaseSensitivity::CaseInsensitive);
-    codeLine.replace("BPTR", "BPTR ", Qt::CaseSensitivity::CaseInsensitive);
+    QStringList list;
 
-    QStringList list = codeLine.split(QRegExp(" "), QString::SkipEmptyParts);
+    if(tokens == 3)
+        list = codeLine.split(QRegExp(" |\\,"), Qt::SplitBehaviorFlags::SkipEmptyParts);
+    else if(tokens == 2)
+        list = codeLine.split(QRegExp(" "), Qt::SplitBehaviorFlags::SkipEmptyParts);
 
-    if(list.at(list.length()-1) == "WPTR" || list.at(list.length()-1) == "BPTR")
+    if(list.at(list.length()-1).compare("WPTR", Qt::CaseSensitivity::CaseInsensitive) == 0  ||
+            list.at(list.length()-1).compare("BPTR", Qt::CaseSensitivity::CaseInsensitive) == 0)
         return std::nullopt;
 
     for(int i = 0; i < list.length(); i++) {
-        if(list.at(i).toUpper() == "WPTR") {
-            if(getOperandType(list.at(i+1)) != OperandType::MemAddr)
-                return std::nullopt;
-            pointerType = Pointer::Word;
-            list.removeAt(i);
-        }
-        else if(list.at(i).toUpper() == "BPTR") {
-            if(getOperandType(list.at(i+1)) != OperandType::MemAddr)
-                return std::nullopt;
-            pointerType = Pointer::Byte;
-            list.removeAt(i);
-        }
-    }
-    if(list.count() >= 2) return std::make_tuple(list.at(0), list.at(1));
-    else return std::nullopt;
-}
-
-std::optional<std::tuple<QString, QString, QString>> Base::threeTokens() {
-    pointerType = Pointer::None;
-    codeLine.replace("WPTR", "WPTR ", Qt::CaseSensitivity::CaseInsensitive);
-    codeLine.replace("BPTR", "BPTR ", Qt::CaseSensitivity::CaseInsensitive);
-    QStringList list = codeLine.split(QRegExp(" |\\,"), QString::SkipEmptyParts);
-
-    if(list.at(list.length()-1) == "WPTR" || list.at(list.length()-1) == "BPTR")
-        return std::nullopt;
-
-    for(int i = 0; i < list.length(); i++) {
-        if(list.at(i).toUpper() == "WPTR") {
+        QString temp = list.at(i);
+        if(list.at(i).compare("WPTR", Qt::CaseSensitivity::CaseInsensitive) == 0) {
             if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list.at(i+1)) == OperandType::Immed16)
                 return std::nullopt;
             pointerType = Pointer::Word;
             list.removeAt(i);
         }
-        else if(list.at(i).toUpper() == "BPTR") {
+        else if(list.at(i).compare("BPTR", Qt::CaseSensitivity::CaseInsensitive) == 0) {
             if(getOperandType(list.at(i+1)) == OperandType::Immed8 || getOperandType(list.at(i+1)) == OperandType::Immed16)
                 return std::nullopt;
             pointerType = Pointer::Byte;
             list.removeAt(i);
         }
+
+        //digits hwnd
+        if(isDecValue(list.at(i)))
+            list[i] = "0X" + numToHexStr(list.at(i));
+        else if(isBinValue(list.at(i)))
+            list[i] = "0X" + numToHexStr(list.at(i));
+
+        //long immed hwnd
+        if(isLongImmed(list.at(i))) {
+            if(list.at(i).endsWith("h", Qt::CaseInsensitive))
+                list[i] = list.at(i).chopped(1);
+            list[i] = "0X" + list.at(i).mid(list.at(i).length() - 4, 4);
+        }
     }
-    assert(list.count() >= 3);
-    return std::make_tuple(list.at(0).toUpper(), list.at(1).toUpper(), list.at(2).toUpper());
+    if(tokens == 2) {
+        if(list.count() < 2) return std::nullopt;
+        return std::make_tuple(list.at(0).toUpper(), list.at(1).toUpper(), "");
+    }
+    else if(tokens == 3) {
+        if(list.count() < 3) return std::nullopt;
+        return std::make_tuple(list.at(0).toUpper(), list.at(1).toUpper(), list.at(2).toUpper());
+    }
+
+    return std::nullopt;
 }
 
 bool Base::hasSegmentPrefix(const QString& param) {
@@ -79,22 +159,22 @@ QString Base::stripSegmentPrefix(const QString& param) {
     return param;
 }
 
-void Base::segmentPrefixWrapper(QString& firstOp, QString& machineCode) {
+void Base::segmentPrefixWrapper(QString& firstOp) {
     if(hasSegmentPrefix(firstOp)) {
-        machineCode.append(hexToStr(getSegRegPrefix(getSegmentPrefix(firstOp))));
+        machineCode.append(numToHexStr(getSegRegPrefix(getSegmentPrefix(firstOp))));
         firstOp = stripSegmentPrefix(firstOp);
     }
 }
 
-void Base::segmentPrefixWrapper(QString& firstOp, QString& secondOp, QString& machineCode) {
+void Base::segmentPrefixWrapper(QString& firstOp, QString& secondOp) {
     if(hasSegmentPrefix(firstOp) && hasSegmentPrefix(secondOp))
         throw InvalidSegmentOverridePrefix();
     else if(hasSegmentPrefix(firstOp)) {
-        machineCode.append(hexToStr(getSegRegPrefix(getSegmentPrefix(firstOp))));
+        machineCode.append(numToHexStr(getSegRegPrefix(getSegmentPrefix(firstOp))));
         firstOp = stripSegmentPrefix(firstOp);
     }
     else if(hasSegmentPrefix(secondOp)) {
-        machineCode.append(hexToStr(getSegRegPrefix(getSegmentPrefix(secondOp))));
+        machineCode.append(numToHexStr(getSegRegPrefix(getSegmentPrefix(secondOp))));
         secondOp = stripSegmentPrefix(secondOp);
     }
 }
@@ -109,14 +189,15 @@ enum OperandType Base::getOperandType(const QString& operand) {
     else if(isMemAddr(strippedOperand)) return OperandType::MemAddr;
     else if(Labels::labelExists(strippedOperand)) return OperandType::Label;
     else if(isImmed8(strippedOperand)) return (strippedOperand.toInt(nullptr, 16) >= 0 ? OperandType::Immed8 : OperandType::NegImmed8);
-    else if(isImmed16(strippedOperand)) return (strippedOperand.toInt(nullptr, 16) >= 0? OperandType::Immed16 : OperandType::NegImmed16);
+    else if(isImmed16(strippedOperand)) return (strippedOperand.toInt(nullptr, 16) >= 0 ? OperandType::Immed16 : OperandType::NegImmed16);
+    else if(isLongImmed(strippedOperand)) return(strippedOperand.toInt(nullptr, 16) >= 0 ? OperandType::LongImmed : OperandType::NegLongImmed);
     return OperandType::Invalid;
 }
 
 uchar Base::rmGenerator(const QString& param) {
     QString addr = param.trimmed().toUpper();
 
-    QStringList argList = addr.split(QRegExp("[+]"), QString::SkipEmptyParts);
+    QStringList argList = addr.split(QRegExp("[+]"), Qt::SplitBehaviorFlags::SkipEmptyParts);
     if(argList.size() >= 2) {
         if(argList.contains("BX") && argList.contains("SI")) return mod00["BX+SI"];
         else if(argList.contains("BX") && argList.contains("DI")) return mod00["BX+DI"];
@@ -146,11 +227,24 @@ bool Base::isChar(const QString& param) {
 }
 
 bool Base::isImmed8(const QString& param) {
-    return isHexValue(param) && abs(param.toInt(nullptr, 16)) <= 0xFF;
+    QString t = param;
+    bool b;
+    if(param.endsWith('h', Qt::CaseInsensitive)) t = param.chopped(1);
+    return isHexValue(t) && abs(t.toLongLong(&b, 16)) <= 0xFF && b;
 }
 
 bool Base::isImmed16(const QString& param) {
-    return isHexValue(param) && (abs(param.toInt(nullptr, 16)) > 0xFF && abs(param.toInt(nullptr, 16)) <= 0xFFFF);
+    QString t = param;
+    bool b;
+    if(param.endsWith('h', Qt::CaseInsensitive)) t = param.chopped(1);
+    return isHexValue(t) && (abs(t.toLongLong(&b, 16)) > 0xFF && abs(t.toLongLong(&b, 16)) <= 0xFFFF) && b;
+}
+
+bool Base::isLongImmed(const QString& param) {
+    QString t = param;
+    bool b;
+    if(param.endsWith('h', Qt::CaseInsensitive)) t = param.chopped(1);
+    return isHexValue(t) && abs(param.toLongLong(&b, 16)) > 0xFFFF && b;
 }
 
 void Base::setCodeLine(const std::string& param) {
@@ -215,12 +309,28 @@ uchar Base::getSegRegCode(const QString& param, bool *ok) {
 }
 
 bool Base::isHexValue(const QString& param) {
-    bool b;
-    param.toInt(&b, 16);
-    return b;
+    std::string hex = param.toStdString();
+
+    std::transform(std::begin(hex), std::end(hex), std::begin(hex), ::toupper);
+    if(hex.starts_with("0X")) {
+        hex.erase(0, 2);
+        if(std::all_of(std::begin(hex), std::end(hex), ::isxdigit)) return true;
+    }
+    else if(hex.ends_with("H")) {
+        hex.erase(hex.size()-1, 1);
+        if(std::all_of(std::begin(hex), std::end(hex), ::isxdigit)) return true;
+    }
+
+    return false;
 }
 
 void Base::hexValidator(QStringList& param) {
+    for(auto &disp : param) {
+        if(isBinValue(disp))
+            disp = "0X" + numToHexStr(disp);
+        else if(isDecValue(disp))
+            disp = "0X" + numToHexStr(disp);
+    }
     param.erase(
             std::remove_if(
                 std::begin(param),
@@ -232,19 +342,33 @@ std::optional<QString> Base::signHandler(const QString& param, const OperandType
     if(ot == OperandType::NegImmed8) {
         if(abs(param.toInt(nullptr, 16)) > 0xFE) {
             uint16_t hexVal = param.toInt(nullptr, 16);
-            return hexToStr(hexVal, OutputSize::Dynamic, Sign::Neg);
+            return numToHexStr(hexVal, OutputSize::Dynamic, Sign::Neg);
         }
         else {
             uint8_t hexVal = param.toInt(nullptr, 16);
-            return hexToStr(hexVal, OutputSize::Dynamic, Sign::Neg);
+            return numToHexStr(hexVal, OutputSize::Dynamic, Sign::Neg);
         }
     }
     else if(ot == OperandType::NegImmed16) {
         if(abs(param.toInt(nullptr, 16)) > 0x7FFF) return std::nullopt;
         uint16_t hexVal = param.toInt(nullptr, 16);
-        return hexToStr(hexVal, OutputSize::Dynamic, Sign::Neg);
+        return numToHexStr(hexVal, OutputSize::Dynamic, Sign::Neg);
     }
     return std::nullopt;
+}
+
+bool Base::isDecValue(const QString& param) {
+    bool b;
+    for(const auto& c : param) {
+        if(!c.isDigit()) return false;
+    }
+    param.toLongLong(&b, 10);
+    return true & b;
+}
+
+bool Base::isBinValue(const QString& param) {
+    bool b = std::all_of(std::begin(param), std::end(param) -1, [](QChar x) {return (x == '0' || x == '1');});
+    return b && param.endsWith('b', Qt::CaseInsensitive);
 }
 
 /*

@@ -12,6 +12,8 @@
 #include <sstream>
 #include <include/exc.h>
 #include <include/labels.h>
+#include <utility>
+
 
 enum class Pointer : uint8_t {
     Byte, Word, None
@@ -29,72 +31,23 @@ enum class OutputSize : uint8_t {
     Byte, Word, Dynamic
 };
 
-QString hexToStr (const std::integral auto &param, OutputSize opSize = OutputSize::Dynamic, Sign sign = Sign::Pos)
-{
-    std::stringstream ss;
-
-    if(sign == Sign::Pos) {
-        if(param > 0xFF) {
-            ss << std::hex << ((param & 0x00f0) >> 4);
-            ss << std::hex << ((param & 0x000f) >> 0);
-            ss << std::hex << ((param & 0xf000) >> 12);
-            ss << std::hex << ((param & 0x0f00) >> 8);
-        } else {
-            ss << std::hex << ((param & 0x00f0) >> 4);
-            ss << std::hex << ((param & 0x000f) >> 0);
-        }
-    }
-    else {
-        if(param > 0xFF) {
-            ss << std::hex << ((param & 0xf000) >> 12);
-            ss << std::hex << ((param & 0x0f00) >> 8);
-            ss << std::hex << ((param & 0x00f0) >> 4);
-            ss << std::hex << ((param & 0x000f) >> 0);
-        } else {
-            ss << std::hex << ((param & 0x00f0) >> 4);
-            ss << std::hex << ((param & 0x000f) >> 0);
-        }
-    }
-
-    if(opSize != OutputSize::Dynamic) {
-        if(opSize == OutputSize::Byte) {
-            if(sign == Sign::Pos)
-                while(ss.str().length() < 2) ss << "0";
-            else if(sign == Sign::Neg)
-                while(ss.str().length() < 2) ss << "F";
-        }
-        else if(opSize == OutputSize::Word) {
-            if(sign == Sign::Pos)
-                while(ss.str().length() < 4) ss << "0";
-            else if(sign == Sign::Neg)
-                while(ss.str().length() < 4) ss << "F";
-        }
-    }
-
-    if (ss.str().length() % 2) {
-        if(sign == Sign::Pos)
-            return "0" + QString::fromStdString(ss.str()).toUpper();
-        else
-            return "F" + QString::fromStdString(ss.str()).toUpper();
-    }
-    return QString::fromStdString(ss.str()).toUpper();
-}
-
 enum OperandType : uint8_t {
     MemAddr, Mem8, Mem16,
     Reg8, Reg16,
     Immed8, Immed16,
     SegReg, NegImmed8,
     NegImmed16, Label,
+    LongImmed, NegLongImmed,
     NOP, Char, Indexer, Invalid
 };
+
 
 using InstRet_T = std::tuple<QString, bool, QString>;
 using Error_T = std::tuple<QString, QString, int>; //{Error Message, The word caused the error, the line number}
 
-const static std::array<QString, 15> Operands{
+const static std::array<QString, 17> Operands{
         "MEM", "MEM8", "MEM16", "REG8", "REG16", "IMMED8", "IMMED16", "SEGREG",
-        "NEGIMMED8", "NEGIMMED16", "LABEL", "NOP", "CHAR",  "INDEXER", "UNKNOWN"};
+        "NEGIMMED8", "NEGIMMED16", "LABEL", "LONGIMMED", "NEGLONGIMMED", "NOP", "CHAR",  "INDEXER", "UNKNOWN"};
 
 const  std::unordered_map<std::string, uchar> segRegsHex    { {"ES", 0x00}, {"CS", 0x01}, {"SS", 0x02}, {"DS", 0x03} };
 const  std::unordered_map<std::string, uchar> indexersHex   { {"SP", 0x04}, {"BP", 0x05}, {"SI", 0x06}, {"DI", 0x07} };
@@ -136,23 +89,28 @@ class Base {
         QString machineCode;
         OperandType destType, srcType;
         uchar opcode;
+        short tokens;
     public:
         virtual InstRet_T process() = 0;
-        bool isImmed8(const QString&);
+        QString numToHexStr (const std::integral auto&, OutputSize = OutputSize::Dynamic, Sign = Sign::Pos);
+        QString numToHexStr (const QString&, OutputSize = OutputSize::Dynamic, Sign = Sign::Pos);
         bool isChar(const QString&);
         void hexValidator(QStringList&);
         bool isImmed16(const QString&);
+        bool isImmed8(const QString&);
+        bool isLongImmed(const QString&);
         bool isHexValue(const QString&);
+        bool isDecValue(const QString&);
+        bool isBinValue(const QString&);
         QString extractDisplacment(const QString&, bool *ok = nullptr);
         QString stripSegmentPrefix(const QString&);
         bool hasSegmentPrefix(const QString&);
         QString getSegmentPrefix(const QString&);
         bool isMemAddr(const QString&);
         enum OperandType getOperandType(const QString&);
-        void segmentPrefixWrapper(QString&, QString&, QString&);
         void segmentPrefixWrapper(QString&, QString&);
-        std::optional<std::tuple<QString, QString>> twoTokens();
-        std::optional<std::tuple<QString, QString, QString>> threeTokens();
+        void segmentPrefixWrapper(QString&);
+        std::optional<std::tuple<QString, QString, QString>> tokenize();
         const QString& getCodeLine();
         uchar getSegRegCode(const QString&, bool *ok = nullptr);
         uchar getSegRegPrefix(const QString&, bool *ok = nullptr);

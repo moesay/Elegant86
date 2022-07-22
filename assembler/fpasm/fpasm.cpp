@@ -99,7 +99,7 @@ std::tuple<QStringList, QList<Error_T>> FirstPhase::Ivalidate(const QStringList&
             pos+=charRegx.matchedLength();
         }
 
-        QStringList splittedLine = p.split(QRegExp(" |\\,"), QString::SkipEmptyParts);
+        QStringList splittedLine = p.split(QRegExp(" |\\,"), Qt::SplitBehaviorFlags::SkipEmptyParts);
 
         auto instResult = std::find(std::begin(instructionsLUT),
                 std::end(instructionsLUT),splittedLine.first().toUpper());
@@ -147,7 +147,7 @@ std::optional<QString> FirstPhase::eval(QString param) {
     if(engine.hasUncaughtException())
         return std::nullopt;
 
-    ret = hexToStr(param.toInt(), OutputSize::Dynamic, Sign::Neg);
+    ret = numToHexStr(param.toInt(), OutputSize::Dynamic, Sign::Neg);
     if(ret == 0) return "";
 
     param="";

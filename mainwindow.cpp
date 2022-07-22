@@ -157,7 +157,7 @@ void MainWindow::run() {
         return;
     }
 
-    for(const auto &line : std::as_const(processedCode)) {
+    for(const auto &line : std::as_const(code)) {
         lineNo++;
         if(line.isEmpty()) continue;
         auto [machCode, success, errMsg] = FirstPhase::assemble(line);

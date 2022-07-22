@@ -99,17 +99,16 @@ TEST_F(AndFixture, MEM8_IMMED8) {
             "and bptr [bp+di],0x24",
             "and bptr [bp+si+0xf24a], 0x21",
         "and [bp+si], 0x22",
-        /* "and bptr [ab], 0xff32" */
-        //should compile after truncating the data
+        "and bptr [0xab], 0xff32",
     };
     PERFORM_TEST;
 }
 
 TEST_F(AndFixture, MEM16_IMMED16) {
     strVec code {
-        "and wptr [0xf1], 0x32", //<-
-            "and wptr [bx+0x11], 0xffa2", //<-
-            "and wptr [bp+si], 0xffff", //fail
+        "and wptr [0xf1], 0x32",
+            "and wptr [bx+0x11], 0xffa2",
+            "and wptr [bp+si], 0xffff",
             "and wptr [bp+di+0xf45b], 0x3fe1",
             "and wptr [bx+si+0x3], 0x23df",
             "and wptr [bx+si+0x232], 0xf1e",

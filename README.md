@@ -40,7 +40,7 @@
 - [Implemented instructions list](#implemented-instructions-list)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
-- [Bugs and feature requests](#bugs-and-feature-requests)
+- [Bugs and features requests](#bugs-and-features-requests)
 - [Copyright and license](#copyright-and-license)
 
 
@@ -83,28 +83,29 @@ Elegant86 hasn't been guranteed to compile with Windows compilers. This section 
 |     add     	| :heavy_check_mark: 	|     push    	| :heavy_check_mark: 	|     pop     	| :heavy_check_mark: 	|     mov     	| :heavy_check_mark: 	|
 |      in     	|         :x:        	|     out     	|         :x:        	|     adc     	|         :x:        	|     inc     	|         :x:        	|
 |     sub     	|         :x:        	|     sbb     	|         :x:        	|     dec     	|         :x:        	|     neg     	|         :x:        	|
-|     cmp     	|         :x:        	|     aas     	|         :x:        	|     das     	|         :x:        	|     mul     	|         :x:        	|
-|     imul    	|         :x:        	|     aam     	|         :x:        	|     div     	|         :x:        	|     idiv    	|         :x:        	|
-|     aad     	|         :x:        	|     cbw     	|         :x:        	|     cwd     	|         :x:        	|     not     	|         :x:        	|
+|     cmp     	|         :x:        	|     aas     	| :heavy_check_mark: 	|     das     	| :heavy_check_mark: 	|     mul     	|         :x:        	|
+|     imul    	|         :x:        	|     aam     	| :heavy_check_mark: 	|     div     	|         :x:        	|     idiv    	|         :x:        	|
+|     aad     	| :heavy_check_mark: 	|     cbw     	| :heavy_check_mark: 	|     cwd     	| :heavy_check_mark: 	|     not     	|         :x:        	|
 |     shl     	|         :x:        	|     sal     	|         :x:        	|     shr     	|         :x:        	|     sar     	|         :x:        	|
 |     rol     	|         :x:        	|     ror     	|         :x:        	|     rcl     	|         :x:        	|     rcr     	|         :x:        	|
 |     and     	| :heavy_check_mark: 	|     test    	|         :x:        	|      or     	|         :x:        	|     xchg    	|         :x:        	|
 |     xor     	|         :x:        	|     rep     	|         :x:        	|     movs    	|         :x:        	|     cmps    	|         :x:        	|
-|     scas    	|         :x:        	|     lods    	|         :x:        	|     stds    	|         :x:        	|     call    	|         :x:        	|
-|     jmp     	|         :x:        	|     ret     	|         :x:        	|      je     	|         :x:        	|      jz     	|         :x:        	|
-|      jl     	|         :x:        	|     jnge    	|         :x:        	|     jle     	|         :x:        	|     jng     	|         :x:        	|
-|      jb     	|         :x:        	|     jnae    	|         :x:        	|     jbe     	|         :x:        	|     jna     	|         :x:        	|
-|      jp     	|         :x:        	|     jpe     	|         :x:        	|      jo     	|         :x:        	|      js     	|         :x:        	|
+|     scas    	|         :x:        	|     lods    	|         :x:        	|     sti     	| :heavy_check_mark: 	|     call    	|         :x:        	|
+|     jmp     	|         :x:        	|     ret     	|         :x:        	|      je     	|         :x:        	|     cld     	| :heavy_check_mark: 	|
+|      jl     	|         :x:        	|     into    	| :heavy_check_mark: 	|     jle     	|         :x:        	|     jng     	|         :x:        	|
+|     aaa     	| :heavy_check_mark: 	|     jnae    	|         :x:        	|     jbe     	|         :x:        	|     jna     	|         :x:        	|
+|      jp     	|         :x:        	|     jpe     	|         :x:        	|     wait    	| :heavy_check_mark: 	|      js     	|         :x:        	|
 |     jne     	|         :x:        	|     jnz     	|         :x:        	|     jnl     	|         :x:        	|     jge     	|         :x:        	|
 |     jnle    	|         :x:        	|      jg     	|         :x:        	|     jnb     	|         :x:        	|     jae     	|         :x:        	|
-|     jnbe    	|         :x:        	|      ja     	|         :x:        	|     jnp     	|         :x:        	|     jpo     	|         :x:        	|
+|     nop     	| :heavy_check_mark: 	|      ja     	|         :x:        	|     jnp     	|         :x:        	|     jpo     	|         :x:        	|
 |     jno     	|         :x:        	|     ret     	|         :x:        	|     jns     	|         :x:        	|     loop    	|         :x:        	|
 |    loopz    	|         :x:        	|    loope    	|         :x:        	|    loopnz   	|         :x:        	|    loopne   	|         :x:        	|
-|     jcxz    	|         :x:        	|     int     	|         :x:        	|     into    	|         :x:        	|     iret    	|         :x:        	|
-|     clc     	|         :x:        	|     cmc     	|         :x:        	|     stc     	|         :x:        	|     cld     	|         :x:        	|
-|     std     	|         :x:        	|     cli     	|         :x:        	|     sti     	|         :x:        	|     hlt     	|         :x:        	|
-|     wait    	|         :x:        	|     esc     	|         :x:        	|     lock    	|         :x:        	|             	|                    	|
-
+|     jcxz    	|         :x:        	|     int     	|         :x:        	|     jnge    	|         :x:        	|     iret    	| :heavy_check_mark: 	|
+|     clc     	| :heavy_check_mark: 	|     cmc     	| :heavy_check_mark: 	|     stc     	| :heavy_check_mark: 	|      jz     	|         :x:        	|
+|     std     	| :heavy_check_mark: 	|     cli     	| :heavy_check_mark: 	|     stds    	|         :x:        	|     hlt     	| :heavy_check_mark: 	|
+|      jo     	|         :x:        	|     esc     	|         :x:        	|     lock    	| :heavy_check_mark: 	|      jb     	|         :x:        	|
+|     daa     	| :heavy_check_mark: 	|     lahf    	| :heavy_check_mark: 	|     jnbe    	|         :x:        	|     popf    	| :heavy_check_mark: 	|
+|     sahf    	| :heavy_check_mark: 	|             	|                    	|             	|                    	|             	|                    	|
 
 ## Documentation
 
@@ -118,7 +119,7 @@ There are no contributing guidelines for Elegant86 (so far). Feel free to fork t
 **Note:** Instructions implementations won't be pulled to the repository without a successful unit test. Elegant86 uses `gtest` for testing. Consider writing the proper unit test for your implementation.
 
 
-## Bugs and feature requests
+## Bugs and features requests
 
 Have a bug or a feature request? Please first [check the issues](https://github.com/moesay/elegant86/issues) and search for existing and closed one. If your problem or idea is not addressed yet, [please open a new issue](https://github.com/moesay/elegant86/issues/new).
 

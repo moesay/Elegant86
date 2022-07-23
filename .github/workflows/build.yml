@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 env:
   BUILD_TYPE: Release
-  CXX: g++-10
+  CXX: g++-11
 
 jobs:
   build:
@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - run: sudo apt-get install g++-10
+    - run: sudo apt-get install g++-11
     
     - name: Googletest Installer
       uses: MarkusJx/googletest-installer@v1.1

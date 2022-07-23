@@ -95,6 +95,7 @@ uchar Push::getOpcode(const QString& param, bool *ok) {
 
 Push::Push(const QString& param) {
     this->setCodeLine(param);
+    tokens = 2;
 }
 
 Push::Push() {tokens = 2;}

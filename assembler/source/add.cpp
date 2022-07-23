@@ -214,5 +214,6 @@ uchar Add::getOpcode(const QString& param, bool *ok) {
 
 Add::Add(const QString& param) {
     this->setCodeLine(param);
+    tokens = 3;
 }
 Add::Add() {tokens = 3;}

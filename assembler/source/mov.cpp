@@ -281,6 +281,7 @@ uchar Mov::getOpcode(const QString& param, bool *ok) {
 }
 
 Mov::Mov(const QString& param) {
+    tokens = 3;
     this->setCodeLine(param);
 }
 Mov::Mov() {tokens = 3;}

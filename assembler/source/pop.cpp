@@ -96,6 +96,7 @@ uchar Pop::getOpcode(const QString& param, bool *ok) {
 
 Pop::Pop(const QString& param) {
     this->setCodeLine(param);
+    tokens = 2;
 }
 
 Pop::Pop() {tokens = 2;}

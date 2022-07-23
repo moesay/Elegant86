@@ -235,5 +235,6 @@ uchar And::getOpcode(const QString& param, bool *ok) {
 
 And::And(const QString& param) {
     this->setCodeLine(param);
+    tokens = 3;
 }
 And::And() {tokens = 3;}

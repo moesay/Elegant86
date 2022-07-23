@@ -25,6 +25,13 @@ const static std::list<QString> instructionsLUT {
         "STI"  ,"HLT"  , "WAIT", "ESC" ,"LOCK"
 };
 
+const static std::list<std::string> No_Op_Insts{
+    "AAA", "AAD", "AAM", "AAS", "CBW", "CLC", "CLD",
+    "CLI", "CMC", "CWD", "DAA", "DAS", "HTL", "INTO",
+    "IRET", "LAHF", "LOCK", "NOP", "POPF", "PUSHF",
+    "SAHF", "STC", "STD", "STI", "WAIT"
+};
+
 class FirstPhase : public Base {
     public:
         FirstPhase (const FirstPhase&) = delete;

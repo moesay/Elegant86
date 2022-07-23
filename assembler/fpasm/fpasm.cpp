@@ -1,5 +1,10 @@
 #include "fpasm.h"
 #include <QScriptEngine>
+#include <algorithm>
+#include <iomanip>
+#include <iterator>
+#include <memory>
+#include <string>
 
 InstRet_T FirstPhase::assemble(const QString& line) {
     return Get().Iassemble(line);
@@ -161,7 +166,7 @@ std::optional<QString> FirstPhase::eval(QString param) {
 
 InstRet_T FirstPhase::Iassemble(const QString& param) {
     std::unique_ptr<Base> b;
-    QString inst = param.split(" ").at(0).toUpper();
+    QString inst = param.trimmed().split(" ").at(0).toUpper();
     //Because we need to assemble to code to calculate the offset of the label.
     //we should be ok with lables defs
     if(Labels::isLableDef(inst))
@@ -185,6 +190,10 @@ InstRet_T FirstPhase::Iassemble(const QString& param) {
     }
     else if(inst == "AND") {
         b = std::make_unique<And>(param);
+        return b->process();
+    }
+    else if(std::any_of(std::begin(No_Op_Insts), std::end(No_Op_Insts), [=](const std::string& x) {return x == inst.toStdString();})) {
+        b = std::make_unique<No_OP_Inst>(param);
         return b->process();
     }
     return {"", false, "Unknown Instruction"};

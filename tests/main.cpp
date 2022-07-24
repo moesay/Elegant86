@@ -7,6 +7,7 @@
 #include "add.hpp"
 #include "push.hpp"
 #include "pop.hpp"
+#include "sub.hpp"
 
 int main(int argc, char *argv[])
 {

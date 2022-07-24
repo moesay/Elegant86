@@ -21,7 +21,7 @@
         <img src="https://img.shields.io/badge/Status-WIP-f10" /></a>
       <a href="https://github.com/moesay/Elegant86/" alt="Dev Status">
         <img src="https://img.shields.io/badge/Developing-Active-green" /></a>
-          <a href="https://github.com/moesay/Elegant86/actions/workflows/build.yml" alt="Status">
+      <a href="https://github.com/moesay/Elegant86/actions/workflows/build.yml" alt="Status">
         <img src="https://github.com/moesay/Elegant86/actions/workflows/build.yml/badge.svg" /></a>
       <a href="https://github.com/moesay/Elegant86/" alt="Repo Size">
         <img src="https://img.shields.io/github/repo-size/moesay/elegant86?label=Repository%20size" /></a>
@@ -55,7 +55,7 @@ Elegant86 doesn't invoke another assembler to assemble your code. Elegant86 itse
 
 #### Linux
 
-To build Elegant86 you need `git`, `qt5`, `g++ >= 10` or `clang++ >= 10`, `cmake`, `make`.
+To build Elegant86 you need `git`, `qt5`, `g++ >= 11` or `clang++ >= 11`, `cmake`, `make`.
 
 
 ```
@@ -66,9 +66,9 @@ $ cmake ..
 $ make Elegant86
 ```
 
-If `g++-10` isn't detected by cmake, use `cmake -DCMAKE_CXX_COMPILER=/path/to/g++-10`.
+If `g++-11` isn't detected by cmake, use `cmake -DCMAKE_CXX_COMPILER=/path/to/g++-11`.
 
-By default its `-DCMAKE_CXX_COMPILER=/usr/bin/g++-10`
+By default its `-DCMAKE_CXX_COMPILER=/usr/bin/g++-11`
 
 
 #### Windows
@@ -82,7 +82,7 @@ Elegant86 hasn't been guranteed to compile with Windows compilers. This section 
 |:-----------:	|:------------------:	|:-----------:	|:------------------:	|:-----------:	|:------------------:	|:-----------:	|:------------------:	|
 |     add     	| :heavy_check_mark: 	|     push    	| :heavy_check_mark: 	|     pop     	| :heavy_check_mark: 	|     mov     	| :heavy_check_mark: 	|
 |      in     	|         :x:        	|     out     	|         :x:        	|     adc     	|         :x:        	|     inc     	|         :x:        	|
-|     sub     	|         :x:        	|     sbb     	|         :x:        	|     dec     	|         :x:        	|     neg     	|         :x:        	|
+|     sub     	|  :heavy_check_mark:   |     sbb     	|         :x:        	|     dec     	|         :x:        	|     neg     	|         :x:        	|
 |     cmp     	|         :x:        	|     aas     	| :heavy_check_mark: 	|     das     	| :heavy_check_mark: 	|     mul     	|         :x:        	|
 |     imul    	|         :x:        	|     aam     	| :heavy_check_mark: 	|     div     	|         :x:        	|     idiv    	|         :x:        	|
 |     aad     	| :heavy_check_mark: 	|     cbw     	| :heavy_check_mark: 	|     cwd     	| :heavy_check_mark: 	|     not     	|         :x:        	|

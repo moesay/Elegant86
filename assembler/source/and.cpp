@@ -65,7 +65,7 @@ InstRet_T And::process() {
 
     else if(destType==OperandType::Reg8 && srcType==OperandType::Immed8) {
         if(dest=="AL") {
-            opcode = getOpcode("AL-IMMED8", &state);
+            opcode = getOpcode("AL-i8", &state);
             machineCode.append(numToHexStr(opcode));
             machineCode.append(numToHexStr(src));
             return {machineCode, true, ""};
@@ -84,7 +84,7 @@ InstRet_T And::process() {
 
     else if(destType==OperandType::Reg16 && (srcType==OperandType::Immed16 || srcType==Immed8)){
         if(dest=="AX") {
-            opcode = getOpcode("AX-IMMED16", &state);
+            opcode = getOpcode("AX-i16", &state);
             machineCode.append(numToHexStr(opcode));
             machineCode.append(numToHexStr(src));
             return {machineCode, true, ""};
@@ -145,7 +145,7 @@ InstRet_T And::process() {
                 reg = getGpRegCode(src, srcType);
             else if(srcType == OperandType::Indexer) {
                 reg = indexersHex.find(src.toStdString())->second;
-                generalExpression = "MEM16-REG16";
+                generalExpression = "m16-r16";
             }
             else if(srcType == Immed8 || srcType == Immed16)
                 reg = 0x04;
@@ -162,7 +162,7 @@ InstRet_T And::process() {
                 reg = getGpRegCode(dest, destType);
             else if(destType == OperandType::Indexer) {
                 reg = indexersHex.find(dest.toStdString())->second;
-                generalExpression = "REG16-MEM16";
+                generalExpression = "r16-m16";
             }
 
             else
@@ -202,7 +202,7 @@ InstRet_T And::process() {
     }
 
     else if(destType == OperandType::Reg16 && srcType == OperandType::Indexer) {
-        opcode = getOpcode("REG16-REG16", &state);
+        opcode = getOpcode("r16-r16", &state);
         if(state == false) return {"", false, "Invalid Operands"};
         machineCode.append(numToHexStr(opcode));
         auto indexerCode = indexersHex.find(src.toStdString())->second;
@@ -212,7 +212,7 @@ InstRet_T And::process() {
     }
 
     else if(destType == OperandType::Indexer && srcType == OperandType::Reg16) {
-        opcode = getOpcode("REG16-REG16", &state);
+        opcode = getOpcode("r16-r16", &state);
         if(state == false) return {"", false, "Invalid Operands"};
         machineCode.append(numToHexStr(opcode));
         auto indexerCode = indexersHex.find(dest.toStdString())->second;
@@ -224,7 +224,7 @@ InstRet_T And::process() {
 }
 
 uchar And::getOpcode(const QString& param, bool *ok) {
-    auto match = LUT.find(param.toUpper().toStdString());
+    auto match = LUT.find(param.toStdString());
     if(match != std::end(LUT)) {
         if(ok != nullptr) *ok = true;
         return match->second;

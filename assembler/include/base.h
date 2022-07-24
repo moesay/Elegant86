@@ -46,8 +46,8 @@ using InstRet_T = std::tuple<QString, bool, QString>;
 using Error_T = std::tuple<QString, QString, int>; //{Error Message, The word caused the error, the line number}
 
 const static std::array<QString, 17> Operands{
-        "MEM", "MEM8", "MEM16", "REG8", "REG16", "IMMED8", "IMMED16", "SEGREG",
-        "NEGIMMED8", "NEGIMMED16", "LABEL", "LONGIMMED", "NEGLONGIMMED", "NOP", "CHAR",  "INDEXER", "UNKNOWN"};
+        "MEM", "m8", "m16", "r8", "r16", "i8", "i16", "sr",
+        "NEGi8", "NEGi16", "LABEL", "LONGIMMED", "NEGLONGIMMED", "NOP", "CHAR",  "INDEXER", "UNKNOWN"};
 
 const  std::unordered_map<std::string, uchar> segRegsHex    { {"ES", 0x00}, {"CS", 0x01}, {"SS", 0x02}, {"DS", 0x03} };
 const  std::unordered_map<std::string, uchar> indexersHex   { {"SP", 0x04}, {"BP", 0x05}, {"SI", 0x06}, {"DI", 0x07} };

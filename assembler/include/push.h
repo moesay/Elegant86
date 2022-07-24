@@ -12,7 +12,7 @@ public:
 
 private:
     std::unordered_map<std::string, uchar> LUT{
-        {"ES", 0X06}, {"CS", 0X0E}, {"SS", 0X16}, {"MEM16", 0XFF},
+        {"ES", 0X06}, {"CS", 0X0E}, {"SS", 0X16}, {"m16", 0XFF},
             {"DS", 0X1E}, {"AX", 0X50}, {"CX", 0X51}, {"DX", 0X52},
             {"BX", 0X53}, {"SP", 0X54}, {"BP", 0X55}, {"SI", 0X56},
             {"DI", 0X57}

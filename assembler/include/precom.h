@@ -4,5 +4,6 @@
 #include "push.h"
 #include "pop.h"
 #include "and.h"
+#include "sub.h"
 #include "no-op-inst.h"
 #include "assembler/fpasm/fpasm.h"

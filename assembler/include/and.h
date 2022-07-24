@@ -12,10 +12,10 @@ public:
 
 private:
     std::unordered_map<std::string, uchar> LUT{
-        {"REG8-REG8", 0X20}, {"MEM8-REG8", 0X20}, {"REG16-REG16", 0X21}, {"MEM16-REG16", 0X21},
-        {"REG8-REG8", 0X22}, {"REG8-MEM8", 0X22}, {"REG16-REG16", 0X23}, {"REG16-MEM16", 0X23},
-        {"AL-IMMED8", 0X24}, {"AX-IMMED16", 0X25}, {"REG8-IMMED8", 0X80}, {"MEM8-IMMED8", 0X80},
-        {"REG16-IMMED16", 0X81}, {"MEM16-IMMED16", 0X81},
+        {"r8-r8", 0X20}, {"m8-r8", 0X20}, {"r16-r16", 0X21}, {"m16-r16", 0X21},
+        {"r8-r8", 0X22}, {"r8-m8", 0X22}, {"r16-r16", 0X23}, {"r16-m16", 0X23},
+        {"AL-i8", 0X24}, {"AX-i16", 0X25}, {"r8-i8", 0X80}, {"m8-i8", 0X80},
+        {"r16-i16", 0X81}, {"m16-i16", 0X81},
 
     };
 };

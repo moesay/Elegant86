@@ -70,7 +70,7 @@ InstRet_T Add::process() {
 
     else if(destType==OperandType::Reg8 && srcType==OperandType::Immed8) {
         if(dest == "AL") {
-            opcode = getOpcode(dest+"-IMMED8", &state);
+            opcode = getOpcode(dest+"-i8", &state);
             if(state == false) return {"", false, "Invalid Operands"};
             machineCode.append(numToHexStr(opcode));
             machineCode.append(numToHexStr(src));
@@ -89,13 +89,13 @@ InstRet_T Add::process() {
 
     else if(destType==OperandType::Reg16 && (srcType==OperandType::Immed16 || srcType==Immed8)){
         if(dest == "AX") {
-            opcode = getOpcode(dest+"-IMMED16", &state);
+            opcode = getOpcode(dest+"-i16", &state);
             if(state == false) return {"", false, "Invalid Operands"};
             machineCode.append(numToHexStr(opcode));
             machineCode.append(numToHexStr(src, OutputSize::Word));
             return {machineCode, true, ""};
         }
-        opcode = getOpcode(Operands[destType]+"-IMMED16" , &state);
+        opcode = getOpcode(Operands[destType]+"-i16" , &state);
         if(state == false) return {"", false, "Invalid Operands"};
         reg = 0X00;
         machineCode.append(numToHexStr(opcode)); //the instruction machine code, in the case its mov XX, XX is any 8 bit reg
@@ -161,7 +161,7 @@ InstRet_T Add::process() {
                 reg = getSegRegCode(dest);
             else if(destType == OperandType::Indexer) {
                 reg = indexersHex.find(dest.toStdString())->second;
-                generalExpression = "REG16-MEM16";
+                generalExpression = "r16-m16";
             }
             else
                 reg = getGpRegCode(dest, destType);
@@ -203,7 +203,7 @@ InstRet_T Add::process() {
 }
 
 uchar Add::getOpcode(const QString& param, bool *ok) {
-    auto match = LUT.find(param.toUpper().toStdString());
+    auto match = LUT.find(param.toStdString());
     if(match != std::end(LUT)) {
         if(ok != nullptr) *ok = true;
         return match->second;

@@ -98,11 +98,11 @@ InstRet_T Mov::process() {
 
     /*
      * The 8086 programmers manual states that each regsiter has its own opcode for immed values moving
-     * There is no general opcode that takes REG16-IMMED. So instead, we have to get to opcode using the name of the register
+     * There is no general opcode that takes r16-IMMED. So instead, we have to get to opcode using the name of the register
      * stored in ~dest
      */
     else if(destType==OperandType::Reg8 && (srcType==OperandType::Immed8 || srcType == OperandType::Immed16)) {
-        opcode = getOpcode(dest+"-IMMED8", &state);
+        opcode = getOpcode(dest+"-i8", &state);
         if(state == false) return {"", false, "Invalid Operands"};
         machineCode.append(numToHexStr(opcode));
         machineCode.append(numToHexStr(src, OutputSize::Byte));
@@ -110,7 +110,7 @@ InstRet_T Mov::process() {
     }
 
     else if(destType==OperandType::Reg16 && (srcType==OperandType::Immed16 || srcType==Immed8)){
-        opcode = getOpcode(dest+"-IMMED16", &state);
+        opcode = getOpcode(dest+"-i16", &state);
         if(state == false) return {"", false, "Invalid Operands"};
         machineCode.append(numToHexStr(opcode)); //the instruction machine code, in the case its mov XX, XX is any 8 bit reg
         machineCode.append(numToHexStr(QString(src), OutputSize::Word));
@@ -194,7 +194,7 @@ InstRet_T Mov::process() {
                 reg = getGpRegCode(src, srcType);
             else if(srcType == OperandType::Indexer) {
                 reg = indexersHex.find(src.toStdString())->second;
-                generalExpression = "MEM16-REG16"; //treating indexers the same way i treat reg16 as they share the same opcode. TBC.
+                generalExpression = "m16-r16"; //treating indexers the same way i treat reg16 as they share the same opcode. TBC.
             }
             //The src might be an immed value
             else if(srcType == Immed8 || srcType == Immed16)
@@ -209,7 +209,7 @@ InstRet_T Mov::process() {
                 reg = getGpRegCode(dest, destType);
             else if(destType == OperandType::Indexer) {
                 reg = indexersHex.find(dest.toStdString())->second;
-                generalExpression = "REG16-MEM16"; //treating indexers the same way i treat reg16 as they share the same opcode. TBC.
+                generalExpression = "r16-m16"; //treating indexers the same way i treat reg16 as they share the same opcode. TBC.
             }
             //if the source is a memaddr, the dest cant be an immid. value
             else
@@ -249,7 +249,7 @@ InstRet_T Mov::process() {
     }
 
     else if(destType == OperandType::Reg16 && srcType == OperandType::Indexer) {
-        opcode = getOpcode("REG16-REG16", &state);
+        opcode = getOpcode("r16-r16", &state);
         if(state == false) return {"", false, "Invalid Operands"};
         machineCode.append(numToHexStr(opcode));
         auto indexerCode = indexersHex.find(src.toStdString())->second;
@@ -259,7 +259,7 @@ InstRet_T Mov::process() {
     }
 
     else if(destType == OperandType::Indexer && srcType == OperandType::Reg16) {
-        opcode = getOpcode("REG16-REG16", &state);
+        opcode = getOpcode("r16-r16", &state);
         if(state == false) return {"", false, "Invalid Operands"};
         machineCode.append(numToHexStr(opcode));
         auto indexerCode = indexersHex.find(dest.toStdString())->second;
@@ -271,7 +271,7 @@ InstRet_T Mov::process() {
 }
 
 uchar Mov::getOpcode(const QString& param, bool *ok) {
-    auto match = LUT.find(param.toUpper().toStdString());
+    auto match = LUT.find(param.toStdString());
     if(match != std::end(LUT)) {
         if(ok != nullptr) *ok = true;
         return match->second;

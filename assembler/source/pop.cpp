@@ -85,7 +85,7 @@ InstRet_T Pop::process() {
 }
 
 uchar Pop::getOpcode(const QString& param, bool *ok) {
-    auto match = LUT.find(param.toUpper().toStdString());
+    auto match = LUT.find(param.toStdString());
     if(match != std::end(LUT)) {
         if(ok != nullptr) *ok = true;
         return match->second;

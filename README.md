@@ -37,6 +37,7 @@
 - [Quick start](#quick-start)
   - [Linux](#linux)
   - [Windows](#windows)
+- [Elegant86 UML Diagram](#elegant86-uml-diagram)
 - [Implemented instructions list](#implemented-instructions-list)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
@@ -75,6 +76,12 @@ By default its `-DCMAKE_CXX_COMPILER=/usr/bin/g++-11`
 
 Elegant86 hasn't been guranteed to compile with Windows compilers. This section will be updated after testing.
 
+
+## Elegant86 UML Diagram
+
+<p align='center'>
+  <img src="https://github.com/moesay/Elegant86/blob/master/uml-diagram.png"/>
+</p>
 
 ## Implemented instructions list
 

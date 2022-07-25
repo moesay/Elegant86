@@ -192,7 +192,7 @@ InstRet_T FirstPhase::Iassemble(const QString& param) {
         b = std::make_unique<And>(param);
         return b->process();
     }
-    else if(std::any_of(std::begin(No_Op_Insts), std::end(No_Op_Insts), [=](const std::string& x) {return x == inst.toStdString();})) {
+    else if(std::any_of(std::begin(NoOpInsts), std::end(NoOpInsts), [=](const std::string& x) {return x == inst.toStdString();})) {
         b = std::make_unique<No_OP_Inst>(param);
         return b->process();
     }

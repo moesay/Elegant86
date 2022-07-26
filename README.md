@@ -7,7 +7,7 @@
 <h3 align="center">Elegant86</h3>
 
 <p align="center">
-  A cross-platform 8086 assembler & emulator built to make assembly easier.
+  A cross-platform 8086/8088 assembler & emulator built to make assembly easier.
   <br>
   <a href="https://github.com/moesay/elegant86/issues/new?template=bug_report.md">Report bug</a>
   ·
@@ -133,7 +133,7 @@ Have a bug or a feature request? Please first [check the issues](https://github.
 
 ## Copyright and license
 
-Code copyright 2019–2021 the [Elegant86 Author](https://github.com/moesay). Code released under the [GNU General Public License](https://github.com/moesay/elegant86/blob/master/LICENSE).
+Code copyright 2019–2022 the [Elegant86 Author](https://github.com/moesay). Code released under the [GNU General Public License](https://github.com/moesay/elegant86/blob/master/LICENSE).
 
 
 Elegant86 icon copyright :copyright: [Freepik Company S.L.](https://www.freepik.com/)

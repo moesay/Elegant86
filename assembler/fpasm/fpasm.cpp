@@ -107,7 +107,7 @@ std::tuple<QStringList, QList<Error_T>> FirstPhase::Ivalidate(const QStringList&
         QStringList splittedLine = p.split(QRegExp(" |\\,"), Qt::SplitBehaviorFlags::SkipEmptyParts);
 
         auto instResult = std::find(std::begin(instructionsLUT),
-                std::end(instructionsLUT),splittedLine.first().toUpper());
+                std::end(instructionsLUT),splittedLine.first().toUpper().toStdString());
 
         if((splittedLine.count() >= 2) && (getOperandType(splittedLine.at(1)) == Label)) {
             if(Labels::labelExists(splittedLine.at(1)) == false) {ret.append(std::make_tuple(QString("Undefined Label"), p, lineNumber)); continue;}
@@ -195,6 +195,9 @@ InstRet_T FirstPhase::Iassemble(const QString& param) {
     else if(std::any_of(std::begin(NoOpInsts), std::end(NoOpInsts), [=](const std::string& x) {return x == inst.toStdString();})) {
         b = std::make_unique<No_OP_Inst>(param);
         return b->process();
+    }
+    else if(std::any_of(std::begin(instructionsLUT), std::end(instructionsLUT), [=](const std::string& x) {return x == inst.toStdString();})) {
+        return {"", false, inst+ " Instruction hasn't been implemented yet."};
     }
     return {"", false, "Unknown Instruction"};
 }

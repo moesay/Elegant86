@@ -5,7 +5,7 @@
 #include <assembler/include/precom.h>
 #include <include/labels.h>
 
-const static std::list<QString> instructionsLUT {
+const static std::list<std::string> instructionsLUT {
         "MOV"  ,"PUSH" , "POP" , "XCHG","IN"  ,"OUT" ,
         "XLAT" ,"LEA"  , "LDS" , "LES" ,"LAHF","SHAF",
         "PUSHF","POPF" , "ADD" , "ADC" ,"INC" ,"AAA" ,

@@ -6,4 +6,6 @@
 #include "and.h"
 #include "sub.h"
 #include "no-op-inst.h"
+#include "jmps.h"
+#include "jmp.h"
 #include "assembler/fpasm/fpasm.h"

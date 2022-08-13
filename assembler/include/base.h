@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <sstream>
 #include <include/exc.h>
-#include <include/labels.h>
+#include <../assembler/fpasm/labels.h>
 #include <utility>
 
 
@@ -38,16 +38,26 @@ enum OperandType : uint8_t {
     SegReg, NegImmed8,
     NegImmed16, Label,
     LongImmed, NegLongImmed,
-    NOP, Char, Indexer, Invalid
+    NOP, Char, Indexer,
+    JShort, JLong, JFar,
+    Empty, Invalid
 };
 
+struct info_t {
+    int size;
+    int relAddr;
+    std::string code;
+    std::string machCode;
+    int ln;
+};
 
 using InstRet_T = std::tuple<QString, bool, QString>;
-using Error_T = std::tuple<QString, QString, int>; //{Error Message, The word caused the error, the line number}
+using Error_T = std::tuple<QString, QString, int>; //{error message, error code, line number}
 
-const static std::array<QString, 17> Operands{
+const static std::array<QString, 21> Operands{
         "MEM", "m8", "m16", "r8", "r16", "i8", "i16", "sr",
-        "NEGi8", "NEGi16", "LABEL", "LONGIMMED", "NEGLONGIMMED", "NOP", "CHAR",  "INDEXER", "UNKNOWN"};
+        "NEGi8", "NEGi16", "LABEL", "LONGIMMED", "NEGLONGIMMED",
+        "NOP", "CHAR",  "INDEXER", "JSHORT", "JLONG", "JFAR", "EMPTY","INVALID"};
 
 const  std::unordered_map<std::string, uchar> segRegsHex    { {"ES", 0x00}, {"CS", 0x01}, {"SS", 0x02}, {"DS", 0x03} };
 const  std::unordered_map<std::string, uchar> indexersHex   { {"SP", 0x04}, {"BP", 0x05}, {"SI", 0x06}, {"DI", 0x07} };
@@ -90,6 +100,7 @@ class Base {
         OperandType destType, srcType;
         uchar opcode;
         short tokens;
+        info_t info;
     public:
         virtual InstRet_T process() = 0;
         QString numToHexStr (const std::integral auto&, OutputSize = OutputSize::Dynamic, Sign = Sign::Pos);
@@ -102,14 +113,17 @@ class Base {
         bool isHexValue(const QString&);
         bool isDecValue(const QString&);
         bool isBinValue(const QString&);
+        bool isLableDef(QString);
+        bool isSegOffset(const QString&);
         QString extractDisplacment(const QString&, bool *ok = nullptr);
         QString stripSegmentPrefix(const QString&);
         bool hasSegmentPrefix(const QString&);
         QString getSegmentPrefix(const QString&);
         bool isMemAddr(const QString&);
         enum OperandType getOperandType(const QString&);
-        void segmentPrefixWrapper(QString&, QString&);
-        void segmentPrefixWrapper(QString&);
+        bool segmentPrefixWrapper(QString&, QString&);
+        bool segmentPrefixWrapper(QString&);
+        void setInfo(const info_t&);
         std::optional<std::tuple<QString, QString, QString>> tokenize();
         const QString& getCodeLine();
         uchar getSegRegCode(const QString&, bool *ok = nullptr);

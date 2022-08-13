@@ -121,6 +121,8 @@ std::optional<std::tuple<QString, QString, QString>> Base::tokenize() {
             list[i] = "0X" + numToHexStr(list.at(i));
         else if(isBinValue(list.at(i)))
             list[i] = "0X" + numToHexStr(list.at(i));
+        else if(list.at(i).endsWith('h', Qt::CaseInsensitive) && isHexValue(list.at(i)))
+            list[i] = "0X" + list.at(i).chopped(1);
 
         //long immed hwnd
         if(isLongImmed(list.at(i))) {
@@ -134,8 +136,8 @@ std::optional<std::tuple<QString, QString, QString>> Base::tokenize() {
         return std::make_tuple(list.at(0).toUpper(), list.at(1).toUpper(), "");
     }
     else if(tokens == 3) {
-        if(list.count() < 3) return std::nullopt;
-        return std::make_tuple(list.at(0).toUpper(), list.at(1).toUpper(), list.at(2).toUpper());
+        if(list.count() < 3) return std::make_tuple(list.at(0).toUpper(), list.at(1).toUpper(), "");
+        else return std::make_tuple(list.at(0).toUpper(), list.at(1).toUpper(), list.at(2).toUpper());
     }
 
     return std::nullopt;
@@ -159,24 +161,29 @@ QString Base::stripSegmentPrefix(const QString& param) {
     return param;
 }
 
-void Base::segmentPrefixWrapper(QString& firstOp) {
+bool Base::segmentPrefixWrapper(QString& firstOp) {
     if(hasSegmentPrefix(firstOp)) {
         machineCode.append(numToHexStr(getSegRegPrefix(getSegmentPrefix(firstOp))));
         firstOp = stripSegmentPrefix(firstOp);
+        return true;
     }
+    return false;
 }
 
-void Base::segmentPrefixWrapper(QString& firstOp, QString& secondOp) {
+bool Base::segmentPrefixWrapper(QString& firstOp, QString& secondOp) {
     if(hasSegmentPrefix(firstOp) && hasSegmentPrefix(secondOp))
         throw InvalidSegmentOverridePrefix();
     else if(hasSegmentPrefix(firstOp)) {
         machineCode.append(numToHexStr(getSegRegPrefix(getSegmentPrefix(firstOp))));
         firstOp = stripSegmentPrefix(firstOp);
+        return true;
     }
     else if(hasSegmentPrefix(secondOp)) {
         machineCode.append(numToHexStr(getSegRegPrefix(getSegmentPrefix(secondOp))));
         secondOp = stripSegmentPrefix(secondOp);
+        return true;
     }
+    return false;
 }
 
 enum OperandType Base::getOperandType(const QString& operand) {
@@ -186,6 +193,10 @@ enum OperandType Base::getOperandType(const QString& operand) {
     else if(Indexers.contains(strippedOperand.trimmed().toUpper())) return OperandType::Indexer;
     else if(Regs16.contains(strippedOperand.trimmed().toUpper())) return OperandType::Reg16;
     else if(SegRegs.contains(strippedOperand.trimmed().toUpper())) return OperandType::SegReg;
+    else if(strippedOperand.trimmed().toUpper() == "SHORT") return OperandType::JShort;
+    else if(strippedOperand.trimmed().toUpper() == "LONG") return OperandType::JLong;
+    else if(strippedOperand.trimmed().toUpper() == "FAR") return OperandType::JFar;
+    else if(strippedOperand.trimmed() == "") return OperandType::Empty;
     else if(isMemAddr(strippedOperand)) return OperandType::MemAddr;
     else if(Labels::labelExists(strippedOperand)) return OperandType::Label;
     else if(isImmed8(strippedOperand)) return (strippedOperand.toInt(nullptr, 16) >= 0 ? OperandType::Immed8 : OperandType::NegImmed8);
@@ -230,14 +241,14 @@ bool Base::isImmed8(const QString& param) {
     QString t = param;
     bool b;
     if(param.endsWith('h', Qt::CaseInsensitive)) t = param.chopped(1);
-    return isHexValue(t) && abs(t.toLongLong(&b, 16)) <= 0xFF && b;
+    return isHexValue(param) && abs(t.toLongLong(&b, 16)) <= 0xFF && b;
 }
 
 bool Base::isImmed16(const QString& param) {
     QString t = param;
     bool b;
     if(param.endsWith('h', Qt::CaseInsensitive)) t = param.chopped(1);
-    return isHexValue(t) && (abs(t.toLongLong(&b, 16)) > 0xFF && abs(t.toLongLong(&b, 16)) <= 0xFFFF) && b;
+    return isHexValue(param) && (abs(t.toLongLong(&b, 16)) > 0xFF && abs(t.toLongLong(&b, 16)) <= 0xFFFF) && b;
 }
 
 bool Base::isLongImmed(const QString& param) {
@@ -369,6 +380,32 @@ bool Base::isDecValue(const QString& param) {
 bool Base::isBinValue(const QString& param) {
     bool b = std::all_of(std::begin(param), std::end(param) -1, [](QChar x) {return (x == '0' || x == '1');});
     return b && param.endsWith('b', Qt::CaseInsensitive);
+}
+
+/*
+ * Should've been implemented using regex but, who cares. i hate regex.
+ * Maybe later
+ */
+bool Base::isLableDef(QString lbl) {
+    /* if(getOperandType */
+    bool init = (lbl.startsWith('.') && lbl.endsWith(':'));
+    lbl = lbl.left(lbl.length() -1);
+    lbl = lbl.right(lbl.length() -1);
+    return (!lbl.contains('.') && !lbl.contains(':') && lbl.length() > 0 && init);
+}
+
+
+void Base::setInfo(const info_t& param) {
+    this->info = param;
+}
+
+bool Base::isSegOffset(const QString& param) {
+    QStringList temp = param.split(':');
+    if(temp.size() != 2) return false;
+    bool seg = isDecValue(temp.at(0)) || isBinValue(temp.at(0)) || isHexValue(temp.at(0));
+    bool offset = isDecValue(temp.at(1)) || isBinValue(temp.at(1)) || isHexValue(temp.at(1));
+
+    return (seg & offset);
 }
 
 /*

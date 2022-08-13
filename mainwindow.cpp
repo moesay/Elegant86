@@ -1,4 +1,10 @@
 #include "mainwindow.h"
+#include <string>
+#include <utility>
+
+QString fmt_err(const output_t &err) {
+    return QString::fromStdString("Error : " + err.err + "\t" + "{ "+err.code+" }" + " at line " + std::to_string(err.ln));
+}
 
 QString fmt_err(const Error_T &err) {
     return "Error : "+std::get<0>(err)+"\t"+"{ "+std::get<1>(err)+" }"+" at line "+QString::number(std::get<2>(err));
@@ -148,26 +154,24 @@ void MainWindow::run() {
     int lineNo = 0;
 
     QStringList code = editorWidget->codeEditor->toPlainText().split('\n');
-    auto [processedCode, errors] = FirstPhase::validate(code);
+    FirstPhase::validate(code);
 
-    while(!errors.isEmpty()) {
-        for(const auto &err : std::as_const(errors)) {
+    while(!FirstPhase::errors.empty()) {
+        for(const auto &err : std::as_const(FirstPhase::errors)) {
             simulateWidget->insertLog(fmt_err(err));
         }
         return;
     }
 
-    for(const auto &line : std::as_const(code)) {
-        lineNo++;
-        if(line.isEmpty()) continue;
-        auto [machCode, success, errMsg] = FirstPhase::assemble(line);
-        if(!success) {
+    auto output = FirstPhase::assemble();
+    for(const auto &line : std::as_const(output)) {
+        if(!line.state) {
             simulateWidget->resetUi();
-            simulateWidget->insertLog(fmt_err(Error_T(errMsg, line, lineNo)));
+            simulateWidget->insertLog(fmt_err(line));
             Labels::clearAll();
             return;
         }
-        simulateWidget->addToCodeViews(machCode, line);
+        simulateWidget->addToCodeViews(QString::fromStdString(line.machCode), QString::fromStdString(line.code));
     }
 }
 

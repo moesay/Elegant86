@@ -89,7 +89,7 @@ Elegant86 hasn't been guranteed to compile with Windows compilers. This section 
 |:-----------:	|:------------------:	|:-----------:	|:------------------:	|:-----------:	|:------------------:	|:-----------:	|:------------------:	|
 |     add     	| :heavy_check_mark: 	|     push    	| :heavy_check_mark: 	|     pop     	| :heavy_check_mark: 	|     mov     	| :heavy_check_mark: 	|
 |      in     	|         :x:        	|     out     	|         :x:        	|     adc     	|         :x:        	|     inc     	|         :x:        	|
-|     sub     	|  :heavy_check_mark:   |     sbb     	|         :x:        	|     dec     	|         :x:        	|     neg     	|         :x:        	|
+|     sub     	|         :x:        	|     sbb     	|         :x:        	|     dec     	|         :x:        	|     neg     	|         :x:        	|
 |     cmp     	|         :x:        	|     aas     	| :heavy_check_mark: 	|     das     	| :heavy_check_mark: 	|     mul     	|         :x:        	|
 |     imul    	|         :x:        	|     aam     	| :heavy_check_mark: 	|     div     	|         :x:        	|     idiv    	|         :x:        	|
 |     aad     	| :heavy_check_mark: 	|     cbw     	| :heavy_check_mark: 	|     cwd     	| :heavy_check_mark: 	|     not     	|         :x:        	|
@@ -98,19 +98,19 @@ Elegant86 hasn't been guranteed to compile with Windows compilers. This section 
 |     and     	| :heavy_check_mark: 	|     test    	|         :x:        	|      or     	|         :x:        	|     xchg    	|         :x:        	|
 |     xor     	|         :x:        	|     rep     	|         :x:        	|     movs    	|         :x:        	|     cmps    	|         :x:        	|
 |     scas    	|         :x:        	|     lods    	|         :x:        	|     sti     	| :heavy_check_mark: 	|     call    	|         :x:        	|
-|     jmp     	|         :x:        	|     ret     	|         :x:        	|      je     	|         :x:        	|     cld     	| :heavy_check_mark: 	|
-|      jl     	|         :x:        	|     into    	| :heavy_check_mark: 	|     jle     	|         :x:        	|     jng     	|         :x:        	|
-|     aaa     	| :heavy_check_mark: 	|     jnae    	|         :x:        	|     jbe     	|         :x:        	|     jna     	|         :x:        	|
-|      jp     	|         :x:        	|     jpe     	|         :x:        	|     wait    	| :heavy_check_mark: 	|      js     	|         :x:        	|
-|     jne     	|         :x:        	|     jnz     	|         :x:        	|     jnl     	|         :x:        	|     jge     	|         :x:        	|
-|     jnle    	|         :x:        	|      jg     	|         :x:        	|     jnb     	|         :x:        	|     jae     	|         :x:        	|
-|     nop     	| :heavy_check_mark: 	|      ja     	|         :x:        	|     jnp     	|         :x:        	|     jpo     	|         :x:        	|
-|     jno     	|         :x:        	|     ret     	|         :x:        	|     jns     	|         :x:        	|     loop    	|         :x:        	|
+|     jmp     	| :heavy_check_mark: 	|     ret     	|         :x:        	|      je     	| :heavy_check_mark: 	|     cld     	| :heavy_check_mark: 	|
+|      jl     	| :heavy_check_mark: 	|     into    	| :heavy_check_mark: 	|     jle     	| :heavy_check_mark: 	|     jng     	| :heavy_check_mark: 	|
+|     aaa     	| :heavy_check_mark: 	|     jnae    	| :heavy_check_mark: 	|     jbe     	| :heavy_check_mark: 	|     jna     	| :heavy_check_mark: 	|
+|      jp     	| :heavy_check_mark: 	|     jpe     	| :heavy_check_mark: 	|     wait    	| :heavy_check_mark: 	|      js     	| :heavy_check_mark: 	|
+|     jne     	| :heavy_check_mark: 	|     jnz     	| :heavy_check_mark: 	|     jnl     	| :heavy_check_mark: 	|     jge     	| :heavy_check_mark: 	|
+|     jnle    	| :heavy_check_mark: 	|      jg     	| :heavy_check_mark: 	|     jnb     	| :heavy_check_mark: 	|     jae     	| :heavy_check_mark: 	|
+|     nop     	| :heavy_check_mark: 	|      ja     	| :heavy_check_mark: 	|     jnp     	| :heavy_check_mark: 	|     jpo     	| :heavy_check_mark: 	|
+|     jno     	| :heavy_check_mark: 	|     ret     	|         :x:        	|     jns     	| :heavy_check_mark: 	|     loop    	|         :x:        	|
 |    loopz    	|         :x:        	|    loope    	|         :x:        	|    loopnz   	|         :x:        	|    loopne   	|         :x:        	|
-|     jcxz    	|         :x:        	|     int     	|         :x:        	|     jnge    	|         :x:        	|     iret    	| :heavy_check_mark: 	|
-|     clc     	| :heavy_check_mark: 	|     cmc     	| :heavy_check_mark: 	|     stc     	| :heavy_check_mark: 	|      jz     	|         :x:        	|
-|     std     	| :heavy_check_mark: 	|     cli     	| :heavy_check_mark: 	|     stds    	|         :x:        	|     hlt     	| :heavy_check_mark: 	|
-|      jo     	|         :x:        	|     esc     	|         :x:        	|     lock    	| :heavy_check_mark: 	|      jb     	|         :x:        	|
+|     jcxz    	| :heavy_check_mark: 	|     int     	|         :x:        	|     jnge    	| :heavy_check_mark: 	|     iret    	| :heavy_check_mark: 	|
+|     clc     	| :heavy_check_mark: 	|     cmc     	| :heavy_check_mark: 	|     stc     	| :heavy_check_mark: 	|      jz     	| :heavy_check_mark: 	|
+|     std     	| :heavy_check_mark: 	|     cli     	| :heavy_check_mark: 	|     stds    	| :heavy_check_mark: 	|     hlt     	| :heavy_check_mark: 	|
+|      jo     	| :heavy_check_mark: 	|     esc     	|         :x:        	|     lock    	| :heavy_check_mark: 	|      jb     	| :heavy_check_mark: 	|
 |     daa     	| :heavy_check_mark: 	|     lahf    	| :heavy_check_mark: 	|     jnbe    	|         :x:        	|     popf    	| :heavy_check_mark: 	|
 |     sahf    	| :heavy_check_mark: 	|             	|                    	|             	|                    	|             	|                    	|
 

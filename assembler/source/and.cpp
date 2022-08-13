@@ -86,7 +86,7 @@ InstRet_T And::process() {
         if(dest=="AX") {
             opcode = getOpcode("AX-i16", &state);
             machineCode.append(numToHexStr(opcode));
-            machineCode.append(numToHexStr(src));
+            machineCode.append(numToHexStr(src, OutputSize::Word));
             return {machineCode, true, ""};
         }
         else {

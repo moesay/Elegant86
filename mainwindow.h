@@ -70,7 +70,7 @@ private:
     QString currentFileName;
 
     enum {MaxRecentFiles = 5};
-    enum Mode {Editing, Simulation, Debuging};
+    enum Mode {Editing, Simulation, Debugging};
 
     //file
     QAction *newAction;

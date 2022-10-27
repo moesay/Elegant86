@@ -39,93 +39,93 @@ void MainWindow::createActions() {
     newAction = new QAction(tr("&New File"), this);
     newAction->setShortcut(tr("Ctrl+N"));
     newAction->setIcon(QIcon(":/resources/new.png"));
-    connect(newAction, SIGNAL(triggered()), this, SLOT(newFile()));
+    connect(newAction, &QAction::triggered, this, &MainWindow::newFile);
 
     openAction = new QAction(tr("&Open File"), this);
     openAction->setShortcut(tr("Ctrl+O"));
     openAction->setIcon(QIcon(":/resources/open.png"));
-    connect(openAction, SIGNAL(triggered()), this, SLOT(openFile()));
+    connect(openAction, &QAction::triggered, this, &MainWindow::openFile);
 
     saveAction = new QAction(tr("&Save"), this);
     saveAction->setShortcut(tr("Ctrl+S"));
     saveAction->setIcon(QIcon(":/resources/save.png"));
-    connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
+    connect(saveAction, &QAction::triggered, this, &MainWindow::save);
 
     saveAsAction = new QAction(tr("Save As"), this);
-    connect(saveAsAction, SIGNAL(triggered()), this, SLOT(saveAs()));
+    connect(saveAsAction, &QAction::triggered, this, &MainWindow::saveAs);
 
     for (int i = 0; i < MaxRecentFiles; ++i) {
         recentFileActions[i] = new QAction(this);
         recentFileActions[i]->setVisible(false);
-        connect(recentFileActions[i], SIGNAL(triggered()), this, SLOT(openRecentFile()));
+        connect(recentFileActions[i], &QAction::triggered, this, &MainWindow::openRecentFile);
     }
 
     exitAction = new QAction(tr("E&xit"), this);
-    connect(exitAction, SIGNAL(triggered()), this, SLOT(Exit()));
+    connect(exitAction, &QAction::triggered, this, &MainWindow::Exit);
 
     copyAction = new QAction(tr("&Copy"), this);
     copyAction->setShortcut(tr("Ctrl+C"));
     copyAction->setIcon(QIcon(":/copy.png"));
-    connect(copyAction, SIGNAL(triggered()), this, SLOT(copy()));
+    connect(copyAction, &QAction::triggered, this, &MainWindow::copy);
 
     cutAction = new QAction(tr("Cut"), this);
     cutAction->setShortcut(tr("Ctrl+X"));
     cutAction->setIcon(QIcon(":/resources/cut.png"));
-    connect(cutAction, SIGNAL(triggered()), this, SLOT(cut()));
+    connect(cutAction, &QAction::triggered, this, &MainWindow::cut);
 
     pasteAction = new QAction(tr("Paste"), this);
     pasteAction->setShortcut(tr("Ctrl+V"));
     pasteAction->setIcon(QIcon(":/resources/paste.png"));
-    connect(pasteAction, SIGNAL(triggered()), this, SLOT(paste()));
+    connect(pasteAction, &QAction::triggered, this, &MainWindow::paste);
 
     undoAction = new QAction(tr("&Undo"), this);
     undoAction->setShortcut(tr("Ctrl+U"));
     undoAction->setIcon(QIcon(":/resources/undo.png"));
-    connect(undoAction, SIGNAL(triggered()), this, SLOT(undo()));
+    connect(undoAction, &QAction::triggered, this, &MainWindow::undo);
 
     redoAction = new QAction(tr("&Redo"), this);
     redoAction->setShortcut(tr("Ctrl+R"));
     redoAction->setIcon(QIcon(":/resources/redo.png"));
-    connect(redoAction, SIGNAL(triggered()), this, SLOT(redo()));
+    connect(redoAction, &QAction::triggered, this, &MainWindow::redo);
 
     prefAction = new QAction(tr("Preferences"), this);
-    connect(prefAction, SIGNAL(triggered()), this, SLOT(pref()));
+    connect(prefAction, &QAction::triggered, this, &MainWindow::pref);
 
     findAction = new QAction(tr("&Find"), this);
     findAction->setShortcut(tr("Ctrl+F"));
-    connect(findAction, SIGNAL(triggered()), this, SLOT(find()));
+    connect(findAction, &QAction::triggered, this, &MainWindow::find);
 
     findAndReplaceAction = new QAction(tr("Find And Replace"), this);
-    connect(findAndReplaceAction, SIGNAL(triggered()), this, SLOT(findAndReplace()));
+    connect(findAndReplaceAction, &QAction::triggered, this, &MainWindow::findAndReplace);
 
     runAction = new QAction(tr("Run Emulation"));
     runAction->setShortcut(tr("F5"));
     runAction->setIcon(QIcon(":/resources/run.png"));
-    connect(runAction, SIGNAL(triggered()), this, SLOT(run()));
+    connect(runAction, &QAction::triggered, this, &MainWindow::run);
 
     pauseAction = new QAction(tr("Pause Emulation"), this);
     pauseAction->setIcon(QIcon(":/resources/pause.png"));
-    connect(pauseAction, SIGNAL(triggered()), this, SLOT(pause()));
+    connect(pauseAction, &QAction::triggered, this, &MainWindow::pause);
 
     stepIntoAction = new QAction(tr("Step In"), this);
     stepIntoAction->setShortcut(tr("F6"));
     stepIntoAction->setIcon(QIcon(":/resources/stepInto.png"));
-    connect(stepIntoAction, SIGNAL(triggered()), this, SLOT(stepInto()));
+    connect(stepIntoAction, &QAction::triggered, this, &MainWindow::stepInto);
 
     stepOutAction = new QAction(tr("Step Out"), this);
     stepOutAction->setShortcut(tr("F7"));
     stepOutAction->setIcon(QIcon(":/resources/stepOut.png"));
-    connect(stepOutAction, SIGNAL(triggered()), this, SLOT(stepOut()));
+    connect(stepOutAction, &QAction::triggered, this, &MainWindow::stepOut);
 
     continueAction = new QAction(tr("Continue Emulation"), this);
     continueAction->setIcon(QIcon(":/resources/continue.png"));
-    connect(continueAction, SIGNAL(triggered()), this, SLOT(Continue()));
+    connect(continueAction, &QAction::triggered, this, &MainWindow::Continue);
 
     killAction = new QAction(tr("Kill Emulation"), this);
     killAction->setIcon(QIcon(":/resources/kill.png"));
-    connect(killAction, SIGNAL(triggered()), this, SLOT(kill()));
+    connect(killAction, &QAction::triggered, this, &MainWindow::kill);
 
     aboutAction = new QAction(tr("About"), this);
-    connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
+    connect(aboutAction, &QAction::triggered, this, &MainWindow::about);
 
 }

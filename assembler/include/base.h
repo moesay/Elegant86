@@ -137,6 +137,14 @@ class Base {
         uchar rmGenerator(const QString&);
         virtual uchar getOpcode(const QString&, bool *ok = nullptr)=0;
         uchar getGpRegCode(const QString&, OperandType, bool *ok = nullptr);
+
+        // Refactored helper methods for common instruction patterns
+        bool resolveMemoryOperandSize(OperandType& destType, OperandType& srcType);
+        InstRet_T processRegToReg();
+        InstRet_T processRegWithImmed8(const QString& dest, const QString& src, uchar regField);
+        InstRet_T processRegWithImmed16(const QString& dest, const QString& src, uchar regField);
+        InstRet_T processMemoryOperand(const QString& dest, const QString& src, uchar regField);
+
         virtual ~Base() = default;
 };
 

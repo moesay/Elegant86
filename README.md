@@ -76,6 +76,16 @@ By default its `-DCMAKE_CXX_COMPILER=/usr/bin/g++-11`
 
 Elegant86 hasn't been guranteed to compile with Windows compilers. This section will be updated after testing.
 
+## New Features
+
+### Recently Added
+- **5 New Instructions**: INC, DEC, XOR, OR, CMP - critical arithmetic and logical operations
+- **Dark Mode**: Toggle dark/light themes via View → Dark Mode (Ctrl+D)
+- **Export Functionality**:
+  - Export assembled code as binary (.bin) - Ctrl+B
+  - Export as Intel HEX format (.hex) - Ctrl+H
+- **Enhanced Syntax Highlighting**: Updated color schemes for both light and dark modes
+- **Keyboard Shortcuts**: Added shortcuts for run (F5), export, and dark mode toggle
 
 ## Elegant86 UML Diagram
 
@@ -88,15 +98,15 @@ Elegant86 hasn't been guranteed to compile with Windows compilers. This section 
 | Instruction 	|       Status       	| Instruction 	|       Status       	| Instruction 	|       Status       	| Instruction 	|       Status       	|
 |:-----------:	|:------------------:	|:-----------:	|:------------------:	|:-----------:	|:------------------:	|:-----------:	|:------------------:	|
 |     add     	| :heavy_check_mark: 	|     push    	| :heavy_check_mark: 	|     pop     	| :heavy_check_mark: 	|     mov     	| :heavy_check_mark: 	|
-|      in     	|         :x:        	|     out     	|         :x:        	|     adc     	|         :x:        	|     inc     	|         :x:        	|
-|     sub     	|         :x:        	|     sbb     	|         :x:        	|     dec     	|         :x:        	|     neg     	|         :x:        	|
-|     cmp     	|         :x:        	|     aas     	| :heavy_check_mark: 	|     das     	| :heavy_check_mark: 	|     mul     	|         :x:        	|
+|      in     	|         :x:        	|     out     	|         :x:        	|     adc     	|         :x:        	|     inc     	| :heavy_check_mark: 	|
+|     sub     	| :heavy_check_mark: 	|     sbb     	|         :x:        	|     dec     	| :heavy_check_mark: 	|     neg     	|         :x:        	|
+|     cmp     	| :heavy_check_mark: 	|     aas     	| :heavy_check_mark: 	|     das     	| :heavy_check_mark: 	|     mul     	|         :x:        	|
 |     imul    	|         :x:        	|     aam     	| :heavy_check_mark: 	|     div     	|         :x:        	|     idiv    	|         :x:        	|
 |     aad     	| :heavy_check_mark: 	|     cbw     	| :heavy_check_mark: 	|     cwd     	| :heavy_check_mark: 	|     not     	|         :x:        	|
 |     shl     	|         :x:        	|     sal     	|         :x:        	|     shr     	|         :x:        	|     sar     	|         :x:        	|
 |     rol     	|         :x:        	|     ror     	|         :x:        	|     rcl     	|         :x:        	|     rcr     	|         :x:        	|
-|     and     	| :heavy_check_mark: 	|     test    	|         :x:        	|      or     	|         :x:        	|     xchg    	|         :x:        	|
-|     xor     	|         :x:        	|     rep     	|         :x:        	|     movs    	|         :x:        	|     cmps    	|         :x:        	|
+|     and     	| :heavy_check_mark: 	|     test    	|         :x:        	|      or     	| :heavy_check_mark: 	|     xchg    	|         :x:        	|
+|     xor     	| :heavy_check_mark: 	|     rep     	|         :x:        	|     movs    	|         :x:        	|     cmps    	|         :x:        	|
 |     scas    	|         :x:        	|     lods    	|         :x:        	|     sti     	| :heavy_check_mark: 	|     call    	|         :x:        	|
 |     jmp     	| :heavy_check_mark: 	|     ret     	|         :x:        	|      je     	| :heavy_check_mark: 	|     cld     	| :heavy_check_mark: 	|
 |      jl     	| :heavy_check_mark: 	|     into    	| :heavy_check_mark: 	|     jle     	| :heavy_check_mark: 	|     jng     	| :heavy_check_mark: 	|

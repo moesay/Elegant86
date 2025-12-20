@@ -12,6 +12,7 @@ class Highliter : public QSyntaxHighlighter
 public:
         Highliter(QTextDocument *parent = nullptr);
         ~Highliter() override {}
+        void setDarkMode(bool enabled);
 protected:
         void highlightBlock(const QString&) override;
 private:

@@ -420,3 +420,164 @@ bool Base::isMod1(const int &displacmentValue) {
     return ((displacmentValue >= 0x0000 && displacmentValue <= 0x007F) ||
             (displacmentValue >= 0xFF80 && displacmentValue < 0xFFFF));
 }
+
+// Refactored helper methods to reduce code duplication
+
+bool Base::resolveMemoryOperandSize(OperandType& destType, OperandType& srcType) {
+    // Resolve destination memory operand size
+    if(destType == OperandType::MemAddr) {
+        if(pointerType != Pointer::None)
+            pointerType == Pointer::Byte ? destType = OperandType::Mem8 : destType = OperandType::Mem16;
+        else {
+            if(srcType == OperandType::Reg16)
+                destType = OperandType::Mem16;
+            else if(srcType == OperandType::Reg8)
+                destType = OperandType::Mem8;
+            else
+                return false; // Unknown pointer size
+        }
+    }
+    // Resolve source memory operand size
+    else if(srcType == OperandType::MemAddr) {
+        if(pointerType != Pointer::None)
+            pointerType == Pointer::Byte ? srcType = OperandType::Mem8 : srcType = OperandType::Mem16;
+        else {
+            if(destType == OperandType::Reg16 || destType == OperandType::SegReg || destType == OperandType::Indexer)
+                srcType = OperandType::Mem16;
+            else if(destType == OperandType::Reg8)
+                srcType = OperandType::Mem8;
+            else
+                return false; // Unknown pointer size
+        }
+    }
+
+    // Adjust immediate sizes based on memory operand sizes
+    if(destType == OperandType::Mem16 && srcType == OperandType::Immed8)
+        srcType = Immed16;
+    else if(srcType == OperandType::Mem16 && destType == OperandType::Immed8)
+        destType = Immed16;
+    if(srcType == OperandType::Immed16 && destType == OperandType::Mem8)
+        srcType = OperandType::Immed8;
+
+    return true;
+}
+
+InstRet_T Base::processRegToReg() {
+    opcode = getOpcode(generalExpression, &state);
+    if(state == false) return {"", false, "Invalid Operands"};
+
+    QString dest, src;
+    auto tokenResult = tokenize();
+    if(tokenResult == std::nullopt) return {"", false, "Invalid Pointer"};
+    auto [mnemonic, d, s] = *tokenResult;
+    dest = d; src = s;
+
+    machineCode.append(numToHexStr(opcode));
+    machineCode.append(numToHexStr(modRegRmGenerator(0x3, getGpRegCode(src, srcType), getGpRegCode(dest, destType))));
+    return {machineCode, true, ""};
+}
+
+InstRet_T Base::processRegWithImmed8(const QString& dest, const QString& src, uchar regField) {
+    // Check for special AL encoding
+    if(dest == "AL") {
+        opcode = getOpcode(dest+"-i8", &state);
+        if(state == false) return {"", false, "Invalid Operands"};
+        machineCode.append(numToHexStr(opcode));
+        machineCode.append(numToHexStr(src));
+        return {machineCode, true, ""};
+    }
+
+    opcode = getOpcode(generalExpression, &state);
+    if(state == false) return {"", false, "Invalid Operands"};
+    modregrm = modRegRmGenerator(0x3, regField, getGpRegCode(dest, destType));
+    machineCode.append(numToHexStr(opcode));
+    machineCode.append(numToHexStr(modregrm));
+    machineCode.append(numToHexStr(src));
+    return {machineCode, true, ""};
+}
+
+InstRet_T Base::processRegWithImmed16(const QString& dest, const QString& src, uchar regField) {
+    // Check for special AX encoding
+    if(dest == "AX") {
+        opcode = getOpcode(dest+"-i16", &state);
+        if(state == false) return {"", false, "Invalid Operands"};
+        machineCode.append(numToHexStr(opcode));
+        machineCode.append(numToHexStr(src, OutputSize::Word));
+        return {machineCode, true, ""};
+    }
+
+    opcode = getOpcode(Operands[destType]+"-i16", &state);
+    if(state == false) return {"", false, "Invalid Operands"};
+    machineCode.append(numToHexStr(opcode));
+    modregrm = modRegRmGenerator(0x3, regField, getGpRegCode(dest, destType));
+    machineCode.append(numToHexStr(modregrm));
+    machineCode.append(numToHexStr(src, OutputSize::Word));
+    return {machineCode, true, ""};
+}
+
+InstRet_T Base::processMemoryOperand(const QString& dest, const QString& src, uchar regField) {
+    bool destIsMemAddr = destType == OperandType::Mem8 || destType == OperandType::Mem16;
+    QString addrOperand = destIsMemAddr ? dest : src;
+    QString otherOperand = destIsMemAddr ? src : dest;
+    OperandType otherType = destIsMemAddr ? srcType : destType;
+
+    // Parse memory address
+    QString cleanAddr = addrOperand;
+    cleanAddr.remove("["); cleanAddr.remove("]");
+    QStringList addrArgs = cleanAddr.split(QRegExp("[+]"));
+
+    QStringList displacment = addrArgs.filter(QRegularExpression("[0-9a-fA-F]"));
+    if(std::any_of(std::begin(addrArgs), std::end(addrArgs), [](const QString& p) {
+                return (notAdressingRegs.contains(p) || Regs8.contains(p));
+                })) return {"", false, "Invalid addressing register/s"};
+    hexValidator(displacment);
+
+    bool directAddress = addrArgs.size() == 1;
+    int displacmentValue = 0;
+
+    if(displacment.size() >= 1)
+        displacmentValue = displacment.first().toInt(0, 16);
+
+    if(displacment.empty()) mod = 0x00;
+    else if(!displacment.empty()) {
+        if(displacment.size() == 1 && addrArgs.size() == 1) mod = 0x00; // direct address
+        else mod = (isMod1(displacmentValue) ? 0x01 : 0x02);
+    }
+
+    // Determine reg field
+    if(destIsMemAddr) {
+        if(srcType == OperandType::Reg16 || srcType == OperandType::Reg8)
+            reg = getGpRegCode(otherOperand, srcType);
+        else if(srcType == Immed8 || srcType == Immed16)
+            reg = regField;
+        else if(srcType == OperandType::SegReg)
+            reg = getSegRegCode(otherOperand);
+    } else {
+        if(destType == OperandType::SegReg)
+            reg = getSegRegCode(otherOperand);
+        else if(destType == OperandType::Indexer) {
+            reg = indexersHex.find(otherOperand.toStdString())->second;
+            generalExpression = "r16-m16";
+        }
+        else
+            reg = getGpRegCode(otherOperand, destType);
+    }
+
+    uchar rm = rmGenerator(cleanAddr);
+    if(rm == 0xFF) return {"", false, "Unhandeled Error"};
+    modregrm = modRegRmGenerator(mod, reg, rm);
+
+    opcode = getOpcode(generalExpression, &state);
+    if(state == false) return {"", false, "Invalid Operands"};
+
+    machineCode.append(numToHexStr(opcode));
+    machineCode.append(numToHexStr(modregrm));
+    if(!displacment.empty())
+        machineCode.append(numToHexStr(displacment.first(), ((directAddress || mod == 0x02) ? OutputSize::Word : OutputSize::Byte)));
+    if(srcType == OperandType::Immed8)
+        machineCode.append(numToHexStr(src, OutputSize::Byte));
+    else if (srcType == OperandType::Immed16)
+        machineCode.append(numToHexStr(src, OutputSize::Word));
+
+    return {machineCode, true, ""};
+}

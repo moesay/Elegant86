@@ -20,7 +20,7 @@ const static std::list<std::string> instructionsLUT {
     "MOV"  ,"PUSH" , "POP" , "XCHG","IN"  ,"OUT" ,
     "XLAT" ,"LEA"  , "LDS" , "LES" ,"LAHF","SHAF",
     "PUSHF","POPF" , "ADD" , "ADC" ,"INC" ,"AAA" ,
-    "DAA"  ,"SUB"  , "SBB" , "DES" ,"NEG" ,"CMP" ,
+    "DAA"  ,"SUB"  , "SBB" , "DEC" ,"NEG" ,"CMP" ,
     "AAS"  ,"DAS"  , "MUL" , "IMUL","AAM" ,"DIV" ,
     "IDIV" ,"AAD"  , "CBW" , "CWD" ,"NOT" ,"SHL" ,
     "SAL"  ,"SHR"  , "ROL" , "ROR" ,"RCL" ,"RCR" ,

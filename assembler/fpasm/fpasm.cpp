@@ -162,6 +162,36 @@ std::vector<output_t> FirstPhase::Iassemble() {
             auto[mach, state, err] = b->process();
             output.push_back({entery.code, mach.toStdString(), err.toStdString(), entery.ln, state});
         }
+        else if(inst == "INC") {
+            b = std::make_unique<Inc>(param);
+            b->setInfo(entery);
+            auto[mach, state, err] = b->process();
+            output.push_back({entery.code, mach.toStdString(), err.toStdString(), entery.ln, state});
+        }
+        else if(inst == "DEC") {
+            b = std::make_unique<Dec>(param);
+            b->setInfo(entery);
+            auto[mach, state, err] = b->process();
+            output.push_back({entery.code, mach.toStdString(), err.toStdString(), entery.ln, state});
+        }
+        else if(inst == "XOR") {
+            b = std::make_unique<Xor>(param);
+            b->setInfo(entery);
+            auto[mach, state, err] = b->process();
+            output.push_back({entery.code, mach.toStdString(), err.toStdString(), entery.ln, state});
+        }
+        else if(inst == "OR") {
+            b = std::make_unique<Or>(param);
+            b->setInfo(entery);
+            auto[mach, state, err] = b->process();
+            output.push_back({entery.code, mach.toStdString(), err.toStdString(), entery.ln, state});
+        }
+        else if(inst == "CMP") {
+            b = std::make_unique<Cmp>(param);
+            b->setInfo(entery);
+            auto[mach, state, err] = b->process();
+            output.push_back({entery.code, mach.toStdString(), err.toStdString(), entery.ln, state});
+        }
         else if(std::any_of(std::begin(NoOpInsts), std::end(NoOpInsts), [=](const std::string& x) {return x == inst.toStdString();})) {
             b = std::make_unique<No_OP_Inst>(param);
             b->setInfo(entery);
@@ -228,6 +258,26 @@ start:
     }
     else if(inst == "AND") {
         b = std::make_unique<And>(param);
+        return b->process();
+    }
+    else if(inst == "INC") {
+        b = std::make_unique<Inc>(param);
+        return b->process();
+    }
+    else if(inst == "DEC") {
+        b = std::make_unique<Dec>(param);
+        return b->process();
+    }
+    else if(inst == "XOR") {
+        b = std::make_unique<Xor>(param);
+        return b->process();
+    }
+    else if(inst == "OR") {
+        b = std::make_unique<Or>(param);
+        return b->process();
+    }
+    else if(inst == "CMP") {
+        b = std::make_unique<Cmp>(param);
         return b->process();
     }
     else if(std::any_of(std::begin(NoOpInsts), std::end(NoOpInsts), [=](const std::string& x) {return x == inst.toStdString();})) {

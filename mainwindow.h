@@ -45,6 +45,9 @@ private slots:
     void Continue();
     void updateStatusBar();
     void about();
+    void toggleDarkMode();
+    void exportBinary();
+    void exportHex();
 
 private:
     QTabWidget *tabWidget;
@@ -68,6 +71,7 @@ private:
     QStringList recentFiles;
     QString shownFileName;
     QString currentFileName;
+    std::vector<output_t> lastAssembledOutput;
 
     enum {MaxRecentFiles = 5};
     enum Mode {Editing, Simulation, Debuging};
@@ -79,6 +83,8 @@ private:
     QAction *separatorAction;
     QAction *recentFileActions[MaxRecentFiles];
     QAction *saveAsAction;
+    QAction *exportBinaryAction;
+    QAction *exportHexAction;
     QAction *exitAction;
 
     //edit
@@ -102,11 +108,17 @@ private:
     //help
     QAction *aboutAction;
 
+    //view
+    QAction *toggleDarkModeAction;
+
     QMenu *fileMenu;
     QMenu *editMenu;
+    QMenu *viewMenu;
     QMenu *SimulateMenu;
     QMenu *helpMenu;
     QMenu *contextMenu;
+
+    bool darkModeEnabled;
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;

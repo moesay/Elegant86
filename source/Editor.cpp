@@ -9,3 +9,9 @@ Editor::Editor(QWidget *parent) : QWidget(parent) {
     mainLayout->addWidget(codeEditor);
     this->setLayout(mainLayout);
 }
+
+void Editor::setDarkMode(bool enabled) {
+    if (hi) {
+        hi->setDarkMode(enabled);
+    }
+}

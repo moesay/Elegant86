@@ -16,6 +16,7 @@ MainWindow::MainWindow()
 }
 
 void MainWindow::initUi() {
+    darkModeEnabled = false;
     setWindowTitle(tr("Elegant86[*]"));
     setWindowIcon(QIcon(":/resources/elegant86.png"));
     createActions();
@@ -164,6 +165,7 @@ void MainWindow::run() {
     }
 
     auto output = FirstPhase::assemble();
+    lastAssembledOutput = output; // Store for export
     for(const auto &line : std::as_const(output)) {
         if(!line.state) {
             simulateWidget->resetUi();
@@ -180,6 +182,188 @@ void MainWindow::pause() {}
 void MainWindow::Continue() {}
 
 void MainWindow::about() {}
+
+void MainWindow::toggleDarkMode() {
+    darkModeEnabled = toggleDarkModeAction->isChecked();
+
+    if(darkModeEnabled) {
+        // Dark mode stylesheet
+        QString darkStyle = R"(
+            QMainWindow, QWidget {
+                background-color: #2b2b2b;
+                color: #d4d4d4;
+            }
+            QMenuBar {
+                background-color: #2b2b2b;
+                color: #d4d4d4;
+            }
+            QMenuBar::item:selected {
+                background-color: #3c3c3c;
+            }
+            QMenu {
+                background-color: #2b2b2b;
+                color: #d4d4d4;
+                border: 1px solid #454545;
+            }
+            QMenu::item:selected {
+                background-color: #3c3c3c;
+            }
+            QToolBar {
+                background-color: #2b2b2b;
+                border: 1px solid #454545;
+            }
+            QTabWidget::pane {
+                border: 1px solid #454545;
+                background-color: #2b2b2b;
+            }
+            QTabBar::tab {
+                background-color: #3c3c3c;
+                color: #d4d4d4;
+                padding: 8px 16px;
+                border: 1px solid #454545;
+            }
+            QTabBar::tab:selected {
+                background-color: #2b2b2b;
+                border-bottom: 2px solid #007acc;
+            }
+            QPlainTextEdit, QTextEdit {
+                background-color: #1e1e1e;
+                color: #d4d4d4;
+                selection-background-color: #264f78;
+                border: 1px solid #454545;
+            }
+            QStatusBar {
+                background-color: #2b2b2b;
+                color: #d4d4d4;
+            }
+            QLabel {
+                color: #d4d4d4;
+            }
+            QPushButton {
+                background-color: #3c3c3c;
+                color: #d4d4d4;
+                border: 1px solid #454545;
+                padding: 5px 10px;
+            }
+            QPushButton:hover {
+                background-color: #454545;
+            }
+            QListWidget, QTreeWidget {
+                background-color: #1e1e1e;
+                color: #d4d4d4;
+                border: 1px solid #454545;
+            }
+        )";
+        qApp->setStyleSheet(darkStyle);
+
+        // Update syntax highlighter for dark mode
+        editorWidget->setDarkMode(true);
+    } else {
+        // Light mode - clear stylesheet
+        qApp->setStyleSheet("");
+
+        // Update syntax highlighter for light mode
+        editorWidget->setDarkMode(false);
+    }
+}
+
+void MainWindow::exportBinary() {
+    if(lastAssembledOutput.empty()) {
+        QMessageBox::warning(this, tr("Export Error"),
+            tr("No assembled code to export. Please run the assembler first (F5)."));
+        return;
+    }
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+        tr("Export Binary"), ".", tr("Binary Files (*.bin)"));
+
+    if(fileName.isEmpty()) return;
+
+    QFile file(fileName);
+    if(!file.open(QIODevice::WriteOnly)) {
+        QMessageBox::warning(this, tr("Export Error"),
+            tr("Cannot create file:\n") + file.errorString());
+        return;
+    }
+
+    // Convert hex string to binary
+    for(const auto& line : lastAssembledOutput) {
+        if(!line.state) continue;
+        QString machCode = QString::fromStdString(line.machCode);
+        for(int i = 0; i < machCode.length(); i += 2) {
+            bool ok;
+            unsigned char byte = machCode.mid(i, 2).toUInt(&ok, 16);
+            if(ok) file.write((char*)&byte, 1);
+        }
+    }
+
+    file.close();
+    statusBar()->showMessage(tr("Binary exported successfully"), 3000);
+}
+
+void MainWindow::exportHex() {
+    if(lastAssembledOutput.empty()) {
+        QMessageBox::warning(this, tr("Export Error"),
+            tr("No assembled code to export. Please run the assembler first (F5)."));
+        return;
+    }
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+        tr("Export Intel HEX"), ".", tr("Intel HEX Files (*.hex)"));
+
+    if(fileName.isEmpty()) return;
+
+    QFile file(fileName);
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, tr("Export Error"),
+            tr("Cannot create file:\n") + file.errorString());
+        return;
+    }
+
+    QTextStream out(&file);
+    int address = 0;
+
+    // Intel HEX format: :LLAAAATT[DD...]CC
+    // LL = byte count, AAAA = address, TT = record type, DD = data, CC = checksum
+    for(const auto& line : lastAssembledOutput) {
+        if(!line.state) continue;
+        QString machCode = QString::fromStdString(line.machCode);
+
+        // Process in 16-byte chunks (standard Intel HEX line length)
+        for(int i = 0; i < machCode.length(); i += 32) { // 32 hex chars = 16 bytes
+            QString chunk = machCode.mid(i, 32);
+            int byteCount = chunk.length() / 2;
+
+            if(byteCount == 0) continue;
+
+            QString hexLine = QString(":%1%2%3")
+                .arg(byteCount, 2, 16, QChar('0')).toUpper()
+                .arg(address, 4, 16, QChar('0')).toUpper()
+                .arg("00"); // Data record type
+
+            // Add data bytes
+            hexLine += chunk.toUpper();
+
+            // Calculate checksum
+            int checksum = byteCount + (address >> 8) + (address & 0xFF);
+            for(int j = 0; j < chunk.length(); j += 2) {
+                checksum += chunk.mid(j, 2).toUInt(nullptr, 16);
+            }
+            checksum = ((~checksum) + 1) & 0xFF;
+
+            hexLine += QString("%1").arg(checksum, 2, 16, QChar('0')).toUpper();
+            out << hexLine << "\n";
+
+            address += byteCount;
+        }
+    }
+
+    // End of file record
+    out << ":00000001FF\n";
+
+    file.close();
+    statusBar()->showMessage(tr("Intel HEX exported successfully"), 3000);
+}
 
 bool MainWindow::okToContinue() {
     if (isWindowModified()) {

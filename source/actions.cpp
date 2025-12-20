@@ -11,6 +11,10 @@ void MainWindow::createMenus() {
     fileMenu->addSeparator();
     fileMenu->addAction(saveAction);
     fileMenu->addAction(saveAsAction);
+    fileMenu->addSeparator();
+    fileMenu->addAction(exportBinaryAction);
+    fileMenu->addAction(exportHexAction);
+    fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
 
     editMenu = menuBar()->addMenu(tr("&Edit"));
@@ -22,6 +26,9 @@ void MainWindow::createMenus() {
     editMenu->addAction(prefAction);
     editMenu->addAction(findAction);
     editMenu->addAction(findAndReplaceAction);
+
+    viewMenu = menuBar()->addMenu(tr("&View"));
+    viewMenu->addAction(toggleDarkModeAction);
 
     SimulateMenu = menuBar()->addMenu(tr("E&mulate"));
     SimulateMenu->addAction(runAction);
@@ -53,6 +60,14 @@ void MainWindow::createActions() {
 
     saveAsAction = new QAction(tr("Save As"), this);
     connect(saveAsAction, SIGNAL(triggered()), this, SLOT(saveAs()));
+
+    exportBinaryAction = new QAction(tr("Export as Binary (.bin)"), this);
+    exportBinaryAction->setShortcut(tr("Ctrl+B"));
+    connect(exportBinaryAction, SIGNAL(triggered()), this, SLOT(exportBinary()));
+
+    exportHexAction = new QAction(tr("Export as Intel HEX (.hex)"), this);
+    exportHexAction->setShortcut(tr("Ctrl+H"));
+    connect(exportHexAction, SIGNAL(triggered()), this, SLOT(exportHex()));
 
     for (int i = 0; i < MaxRecentFiles; ++i) {
         recentFileActions[i] = new QAction(this);
@@ -127,5 +142,10 @@ void MainWindow::createActions() {
 
     aboutAction = new QAction(tr("About"), this);
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
+
+    toggleDarkModeAction = new QAction(tr("Dark Mode"), this);
+    toggleDarkModeAction->setCheckable(true);
+    toggleDarkModeAction->setShortcut(tr("Ctrl+D"));
+    connect(toggleDarkModeAction, SIGNAL(triggered()), this, SLOT(toggleDarkMode()));
 
 }

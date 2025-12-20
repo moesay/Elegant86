@@ -11,6 +11,7 @@ class Editor : public QWidget {
         CodeEditor *codeEditor;
         Highliter *hi;
         explicit Editor(QWidget *parent = nullptr);
+        void setDarkMode(bool enabled);
 };
 
 #endif
